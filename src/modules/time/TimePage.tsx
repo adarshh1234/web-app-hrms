@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { SlidersHorizontal, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 export const TimePage: React.FC = () => {
+  const toast = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const rows = Array(10).fill({
     name: 'Karthika Balan',
@@ -19,14 +21,14 @@ export const TimePage: React.FC = () => {
         <h1 className="text-xl font-bold text-slate-900 m-0">Overt time Pool</h1>
         <div className="flex items-center gap-2.5">
           <button 
-            onClick={() => alert("Filter pool records")}
+            onClick={() => toast.info("Filter pool records")}
             className="flex items-center gap-1.5 px-3.5 py-2 border border-[#0473b8] bg-white rounded-lg text-xs font-semibold text-[#0473b8] hover:bg-blue-50/50 transition-all"
           >
             <SlidersHorizontal className="h-3.5 w-3.5 text-[#0473b8]" />
             <span>Filter</span>
           </button>
           <button 
-            onClick={() => alert("Add candidate to overtime records")}
+            onClick={() => toast.info("Add candidate to overtime records")}
             className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -49,9 +51,9 @@ export const TimePage: React.FC = () => {
 
         {/* Card Rows */}
         <div className="space-y-2">
-          {rows.map((row, idx) => (
+          {rows.map((row) => (
             <div 
-              key={idx}
+              key={row.id || `${row.name}-${row.date}`}
               className="grid grid-cols-6 items-center bg-white border border-slate-200 rounded-lg py-3 px-4 shadow-sm hover:border-slate-350 transition-all text-xs font-bold text-slate-800"
             >
               <span>{row.name}</span>

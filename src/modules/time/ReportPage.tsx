@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Calendar, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 export const ReportPage: React.FC = () => {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'project' | 'employee' | 'summary'>('project');
 
   // Tab 1 state
@@ -31,14 +33,14 @@ export const ReportPage: React.FC = () => {
       
       {/* 3 Navigation pills at the top */}
       <div className="flex gap-3">
-        {[
+        {([
           { id: 'project', label: 'Project Report' },
           { id: 'employee', label: 'Employee Report' },
           { id: 'summary', label: 'Attendance Summery' }
-        ].map(pill => (
+        ] as const).map(pill => (
           <button
             key={pill.id}
-            onClick={() => setActiveTab(pill.id as any)}
+            onClick={() => setActiveTab(pill.id)}
             className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${
               activeTab === pill.id 
                 ? 'bg-blue-50 text-[#0473b8] font-extrabold border border-blue-200 shadow-sm'
@@ -115,7 +117,7 @@ export const ReportPage: React.FC = () => {
             {/* Actions */}
             <div className="flex justify-end pt-2">
               <button 
-                onClick={() => alert("Loading project report")}
+                onClick={() => toast.info("Loading project report")}
                 className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer transition-colors"
               >
                 View
@@ -224,7 +226,7 @@ export const ReportPage: React.FC = () => {
             {/* Actions */}
             <div className="flex justify-end pt-2">
               <button 
-                onClick={() => alert("Loading employee report")}
+                onClick={() => toast.info("Loading employee report")}
                 className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer transition-colors"
               >
                 View
@@ -339,7 +341,7 @@ export const ReportPage: React.FC = () => {
             {/* Actions */}
             <div className="flex justify-end pt-2">
               <button 
-                onClick={() => alert("Loading attendance summary report")}
+                onClick={() => toast.info("Loading attendance summary report")}
                 className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer transition-colors"
               >
                 View

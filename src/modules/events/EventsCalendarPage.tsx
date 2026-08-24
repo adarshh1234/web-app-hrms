@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 export const EventsCalendarPage: React.FC = () => {
+  const toast = useToast();
   const [activeSegment, setActiveSegment] = useState<'month' | 'week' | 'day'>('month');
 
   // Filter checkbox states
@@ -50,7 +52,7 @@ export const EventsCalendarPage: React.FC = () => {
               <button
                 key={segment}
                 type="button"
-                onClick={() => setActiveSegment(segment.toLowerCase() as any)}
+                onClick={() => setActiveSegment(segment.toLowerCase() as 'month' | 'week' | 'day')}
                 className={`px-4 py-1 rounded transition-all ${
                   activeSegment === segment.toLowerCase()
                     ? 'bg-white text-slate-900 font-extrabold shadow-sm'
@@ -63,7 +65,7 @@ export const EventsCalendarPage: React.FC = () => {
           </div>
 
           <button 
-            onClick={() => alert("Redirecting to Add Event tab")}
+            onClick={() => toast.info('Redirecting to Add Event tab')}
             className="px-5 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer"
           >
             Add Event
@@ -92,7 +94,7 @@ export const EventsCalendarPage: React.FC = () => {
           <div className="grid grid-cols-7 text-xs font-bold text-slate-700 min-h-[450px]">
             {calendarCells.map((cell, idx) => (
               <div 
-                key={idx}
+                key={`cell-${cell.day}-${idx}`}
                 className={`border-b border-r border-slate-100 p-4 flex flex-col justify-between h-20 relative hover:bg-slate-50/50 transition-colors ${
                   !cell.current ? 'text-slate-300' : 'text-slate-800'
                 }`}

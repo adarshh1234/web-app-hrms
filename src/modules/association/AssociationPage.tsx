@@ -1,33 +1,47 @@
 import React, { useState, useEffect } from 'react';
+import { AssociationRequest } from '../../types';
+import adminService from '../../services/adminService';
+import Loader from '../../components/common/Loader';
+import EmptyState from '../../components/common/EmptyState';
+import { useToast } from '../../hooks/useToast';
 import { 
-  getAssociationRequests, 
-  saveAssociationRequests,
-  AssociationRequest 
-} from '../../data/mockData';
-import { 
-  Link2, 
-  Check, 
-  X, 
-  Search 
+  Building2, 
+  Link2,
+  Check,
+  X
 } from 'lucide-react';
 
 export const AssociationPage: React.FC = () => {
+  const toast = useToast();
   const [requests, setRequests] = useState<AssociationRequest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadRequests = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await adminService.getAssociationRequests();
+      setRequests(data);
+    } catch (err) {
+      setError('Failed to load association requests.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setRequests(getAssociationRequests());
+    loadRequests();
   }, []);
 
-  const handleAction = (id: string, action: 'Accepted' | 'Cancelled') => {
-    const updated = requests.map(req => {
-      if (req.id === id) {
-        return { ...req, status: action };
-      }
-      return req;
-    });
-    setRequests(updated);
-    saveAssociationRequests(updated);
-    alert(`Association request ${action.toLowerCase()}!`);
+  const handleAction = async (id: string, action: 'Accepted' | 'Cancelled') => {
+    try {
+      await adminService.updateAssociationStatus(id, action);
+      await loadRequests();
+      toast.success(`Association request ${action.toLowerCase()}!`);
+    } catch (err) {
+      toast.error('Failed to update association request.');
+    }
   };
 
   return (
@@ -43,41 +57,54 @@ export const AssociationPage: React.FC = () => {
           <span>New Association Requests</span>
         </h3>
 
-        <div className="space-y-4 max-w-2xl">
-          {requests.map((req, idx) => (
-            <div key={idx} className="p-4 border border-slate-100 rounded-xl space-y-3 bg-slate-50/50">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-bold text-slate-800 text-sm">{req.employeeName}</h4>
-                  <p className="text-[10px] text-slate-400">Date: {req.dateRequested}</p>
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex justify-between items-center">
+            <span>{error}</span>
+            <button onClick={loadRequests} className="font-bold underline ml-2">Retry</button>
+          </div>
+        )}
+
+        {isLoading ? (
+          <Loader text="Loading association requests..." />
+        ) : requests.length === 0 ? (
+          <EmptyState title="No association requests" description="There are no pending or past association requests." />
+        ) : (
+          <div className="space-y-4 max-w-2xl">
+            {requests.map((req) => (
+              <div key={req.id} className="p-4 border border-slate-100 rounded-xl space-y-3 bg-slate-50/50">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-bold text-slate-800 text-sm">{req.employeeName}</h4>
+                    <p className="text-[10px] text-slate-400">Date: {req.dateRequested}</p>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                    req.status === 'Accepted' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                    req.status === 'Cancelled' ? 'bg-rose-50 text-rose-700 border-rose-100' :
+                    'bg-amber-50 text-amber-700 border-amber-100'
+                  }`}>{req.status}</span>
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-                  req.status === 'Accepted' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                  req.status === 'Cancelled' ? 'bg-rose-50 text-rose-700 border-rose-100' :
-                  'bg-amber-50 text-amber-700 border-amber-100'
-                }`}>{req.status}</span>
+                <p className="text-xs text-slate-600 leading-relaxed">{req.requestDetails}</p>
+                
+                {req.status === 'Pending' && (
+                  <div className="flex gap-2 justify-end border-t border-slate-100 pt-3">
+                    <button 
+                      onClick={() => handleAction(req.id, 'Cancelled')}
+                      className="px-3 py-1.5 border border-slate-200 text-slate-700 font-bold text-xs rounded hover:bg-slate-50"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={() => handleAction(req.id, 'Accepted')}
+                      className="px-4 py-1.5 bg-[var(--primary-color)] hover:bg-[var(--primary-hover)] text-white font-bold text-xs rounded shadow-sm"
+                    >
+                      Accept
+                    </button>
+                  </div>
+                )}
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">{req.requestDetails}</p>
-              
-              {req.status === 'Pending' && (
-                <div className="flex gap-2 justify-end border-t border-slate-100 pt-3">
-                  <button 
-                    onClick={() => handleAction(req.id, 'Cancelled')}
-                    className="px-3 py-1.5 border border-slate-200 text-slate-700 font-bold text-xs rounded hover:bg-slate-50"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={() => handleAction(req.id, 'Accepted')}
-                    className="px-4 py-1.5 bg-[var(--primary-color)] hover:bg-[var(--primary-hover)] text-white font-bold text-xs rounded shadow-sm"
-                  >
-                    Accept
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

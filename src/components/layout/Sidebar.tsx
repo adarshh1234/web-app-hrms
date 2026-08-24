@@ -13,18 +13,122 @@ import {
   Link2,
   Search,
   Bell,
-  ChevronDown,
-  ChevronRight,
   Clock,
   Mail
 } from 'lucide-react';
+import HuremasoLogo from '../common/HuremasoLogo';
+import HuremasoWaveBg from '../common/HuremasoWaveBg';
 
 interface SidebarProps {
   isOpen: boolean;
   onToggle?: () => void;
+  onClose?: () => void;
+  isMobileOpen: boolean;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
+interface SidebarNavLinkProps {
+  to: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  isOpen: boolean;
+}
+
+const SidebarNavLink: React.FC<SidebarNavLinkProps> = ({ to, icon: Icon, label, isOpen }) => {
+  const getLinkClass = (isActive: boolean) => {
+    if (isActive) {
+      return "w-full flex items-center gap-3.5 px-6 py-4.5 bg-white text-slate-900 border-b border-slate-200 font-bold text-xs select-none transition-colors";
+    }
+    return "w-full flex items-center gap-3.5 px-6 py-4.5 bg-[#0a73b0] hover:bg-[#09669c] text-white border-b border-[#1487c8] font-bold text-xs select-none transition-colors";
+  };
+
+  return (
+    <NavLink to={to} className={({ isActive }) => getLinkClass(isActive)}>
+      <Icon className="h-4.5 w-4.5 shrink-0" />
+      {isOpen && <span className="whitespace-nowrap">{label}</span>}
+    </NavLink>
+  );
+};
+
+interface SubItem {
+  name: string;
+  path: string;
+  isCustomActive?: (pathname: string, search: string) => boolean;
+}
+
+interface SidebarNavGroupProps {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  groupKey: string;
+  isGroupActive: boolean;
+  isChildActive: boolean;
+  isOpen: boolean;
+  isExpanded: boolean;
+  onToggle: (groupKey: string, e: React.MouseEvent) => void;
+  items: SubItem[];
+  location: { pathname: string; search: string };
+}
+
+const SidebarNavGroup: React.FC<SidebarNavGroupProps> = ({
+  label,
+  icon: Icon,
+  groupKey,
+  isGroupActive,
+  isChildActive,
+  isOpen,
+  isExpanded,
+  onToggle,
+  items,
+  location
+}) => {
+  const getGroupClass = (isGroupActive: boolean, isAnyChildActive: boolean) => {
+    if (isAnyChildActive) {
+      return "w-full flex items-center gap-3.5 px-6 py-4.5 bg-[#95c5e8] text-white font-bold text-xs select-none border-b border-[#1487c8] transition-colors";
+    }
+    if (isGroupActive) {
+      return "w-full flex items-center gap-3.5 px-6 py-4.5 bg-white text-slate-900 border-b border-slate-200 font-bold text-xs select-none transition-colors";
+    }
+    return "w-full flex items-center gap-3.5 px-6 py-4.5 bg-[#0a73b0] hover:bg-[#09669c] text-white border-b border-[#1487c8] font-bold text-xs select-none transition-colors";
+  };
+
+  return (
+    <div className="w-full">
+      <button
+        onClick={(e) => onToggle(groupKey, e)}
+        className={getGroupClass(isGroupActive, isChildActive)}
+      >
+        <div className="flex items-center gap-3.5">
+          <Icon className="h-4.5 w-4.5 shrink-0" />
+          {isOpen && <span className="whitespace-nowrap">{label}</span>}
+        </div>
+      </button>
+
+      {isOpen && isExpanded && (
+        <div className="bg-[#086399] w-full text-xs font-bold text-slate-100 divide-y divide-[#0c5987] select-none">
+          {items.map((sub) => (
+            <NavLink
+              key={sub.name}
+              to={sub.path}
+              className={({ isActive }) => {
+                const active = sub.isCustomActive
+                  ? sub.isCustomActive(location.pathname, location.search)
+                  : isActive;
+                return `block px-10 py-3 transition-all ${
+                  active
+                    ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm'
+                    : 'text-blue-100 hover:bg-[#07598a]'
+                }`;
+              }}
+            >
+              {sub.name}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen }) => {
   const [sidebarSearch, setSidebarSearch] = useState('');
   const location = useLocation();
 
@@ -52,9 +156,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const isEmployeeActive = location.pathname.startsWith('/employees') || location.pathname.startsWith('/performance');
   const isEmployeeChildActive = location.pathname.startsWith('/employees/list') || location.pathname.startsWith('/employees/documents') || location.pathname.startsWith('/employees/config') || location.pathname.startsWith('/employees/report') || location.pathname.startsWith('/performance');
   
-  const isOvertimeActive = location.pathname.startsWith('/time/finance-request') || location.pathname.startsWith('/time/wake-off') || location.pathname.startsWith('/time/time-off');
-  const isOvertimeChildActive = isOvertimeActive;
-
   const isPayrollActive = location.pathname.startsWith('/payroll');
   const isPayrollChildActive = location.pathname.startsWith('/payroll/');
 
@@ -79,58 +180,36 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const isRecruitmentActive = location.pathname.startsWith('/recruitment');
   const isRecruitmentChildActive = location.pathname.startsWith('/recruitment') && location.search.startsWith('?tab=');
 
-  // Styling helper for main menu links
-  const getGroupClass = (isGroupActive: boolean, isAnyChildActive: boolean) => {
-    if (isAnyChildActive) {
-      return "w-full flex items-center gap-3.5 px-6 py-4.5 bg-[#95c5e8] text-white font-bold text-xs select-none border-b border-[#1487c8] transition-colors";
-    }
-    if (isGroupActive) {
-      return "w-full flex items-center gap-3.5 px-6 py-4.5 bg-white text-slate-900 border-b border-slate-200 font-bold text-xs select-none transition-colors";
-    }
-    return "w-full flex items-center gap-3.5 px-6 py-4.5 bg-[#0a73b0] hover:bg-[#09669c] text-white border-b border-[#1487c8] font-bold text-xs select-none transition-colors";
-  };
-
-  const getLinkClass = (isActive: boolean) => {
-    if (isActive) {
-      return "w-full flex items-center gap-3.5 px-6 py-4.5 bg-white text-slate-900 border-b border-slate-200 font-bold text-xs select-none transition-colors";
-    }
-    return "w-full flex items-center gap-3.5 px-6 py-4.5 bg-[#0a73b0] hover:bg-[#09669c] text-white border-b border-[#1487c8] font-bold text-xs select-none transition-colors";
-  };
-
   return (
-    <aside 
-      className={`fixed inset-y-0 left-0 z-30 flex flex-col h-full bg-[#0a73b0] transition-all duration-300 ${
-        isOpen ? 'w-72' : 'w-20'
-      } shadow-xl border-r border-slate-200`}
-    >
+    <>
+      {/* Mobile backdrop overlay */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/50 md:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+      <aside 
+        className={`fixed inset-y-0 left-0 z-30 flex flex-col h-full bg-[#0a73b0] transition-all duration-300 shadow-xl border-r border-slate-200 w-72 ${
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:translate-x-0 ${isOpen ? 'md:w-72' : 'md:w-20'}`}
+        onClick={(e) => {
+          // Close mobile drawer when a link is clicked
+          const target = e.target as HTMLElement;
+          if (target.closest('a') && onClose) {
+            onClose();
+          }
+        }}
+      >
       {/* Top section: Blue gradient wave background logo container */}
       <div className="relative overflow-hidden h-36 flex flex-col justify-end shrink-0 bg-gradient-to-tr from-[#e3f2fd] via-[#f0f9ff] to-[#90caf9] border-b border-slate-200">
-        
-        {/* Wavy abstract curves matching mockup design */}
-        <svg 
-          className="absolute inset-0 h-full w-full pointer-events-none select-none z-0" 
-          viewBox="0 0 100 100" 
-          preserveAspectRatio="none"
-        >
-          {/* Top-right wave */}
-          <path d="M 50,0 C 70,25 85,35 100,20 L 100,0 Z" fill="#64b5f6" opacity="0.45" />
-          {/* Center sweeping wave */}
-          <path d="M 0,100 C 35,80 65,50 100,70 L 100,100 Z" fill="#cce7ff" opacity="0.65" />
-          {/* Soft white wave sweep */}
-          <path d="M 0,70 C 30,50 60,80 100,45 L 100,100 L 0,100 Z" fill="#ffffff" opacity="0.3" />
-        </svg>
+        <HuremasoWaveBg />
 
-        {/* HUREMASO Logo matching exact design */}
-        <div className="px-6 pb-6 relative z-10 flex items-center justify-center select-none text-[#5b9bd5] font-light text-[32px] tracking-wide font-sans">
-          <span>HUR</span>
-          <span className="relative flex items-center justify-center">
-            E
-            <span className="absolute top-[43%] left-[-1.5px] w-[18px] h-[3px] bg-black rounded-xs"></span>
-          </span>
-          <span className="text-[#3c3c3c] font-normal pl-0.5">MASO</span>
+        <div className="px-6 pb-6 relative z-10">
+          <HuremasoLogo size="lg" />
         </div>
 
-        {/* Sidebar Search Input inside header - touching both ends */}
         {isOpen && (
           <div className="w-full relative z-10 border-b border-slate-200">
             <Search className="absolute left-6 top-3 h-4 w-4 text-black" />
@@ -148,582 +227,205 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       {/* Navigation menu list with blue background */}
       <div className="flex flex-col flex-1 overflow-y-auto p-0 space-y-0 bg-[#0a73b0]">
         
-        {/* 1st Main section: Dashboard */}
-        <NavLink
-          to="/dashboard"
-          className={({ isActive }) => getLinkClass(isActive)}
-        >
-          <Home className="h-4.5 w-4.5 shrink-0" />
-          {isOpen && <span className="whitespace-nowrap">Dashboard</span>}
-        </NavLink>
+        {/* Dashboard */}
+        <SidebarNavLink to="/dashboard" icon={Home} label="Dashboard" isOpen={isOpen} />
 
-        {/* 2nd Main section: Employee Management (Exist) */}
-        <div className="w-full">
-          <button
-            onClick={(e) => toggleGroup('employee', e)}
-            className={getGroupClass(isEmployeeActive, isEmployeeChildActive)}
-          >
-            <div className="flex items-center gap-3.5">
-              <Users className="h-4.5 w-4.5 shrink-0" />
-              {isOpen && <span className="whitespace-nowrap">Employee Management (Exist)</span>}
-            </div>
-          </button>
+        {/* Employee Management */}
+        <SidebarNavGroup
+          label="Employee Management (Exist)"
+          icon={Users}
+          groupKey="employee"
+          isGroupActive={isEmployeeActive}
+          isChildActive={isEmployeeChildActive}
+          isOpen={isOpen}
+          isExpanded={expandedGroups.employee}
+          onToggle={toggleGroup}
+          location={location}
+          items={[
+            { name: 'Employee List', path: '/employees/list' },
+            { name: 'Employee documents', path: '/employees/documents' },
+            { name: 'Configuration', path: '/employees/config' },
+            { name: 'Report', path: '/employees/report' },
+            { name: 'Performance', path: '/performance' },
+            { name: 'Overttime Pool', path: '/time/overtime-pool' },
+            { name: 'Employee finance requests', path: '/time/finance-request' },
+            { name: 'Wake off', path: '/time/wake-off' },
+            { name: 'Time off Request', path: '/time/time-off' }
+          ]}
+        />
 
-          {/* Subsections under Employee Management */}
-          {isOpen && expandedGroups.employee && (
-            <div className="bg-[#086399] w-full text-xs font-bold text-slate-100 divide-y divide-[#0c5987] select-none">
-              <NavLink 
-                to="/employees/list"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Employee List
-              </NavLink>
-              
-              <NavLink 
-                to="/employees/documents"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Employee documents
-              </NavLink>
+        {/* Recruitment */}
+        <SidebarNavGroup
+          label="Recruitment"
+          icon={UserPlus}
+          groupKey="recruitmentGroup"
+          isGroupActive={isRecruitmentActive}
+          isChildActive={isRecruitmentChildActive}
+          isOpen={isOpen}
+          isExpanded={expandedGroups.recruitmentGroup}
+          onToggle={toggleGroup}
+          location={location}
+          items={[
+            { name: 'Employee Onboarding', path: '/recruitment?tab=onboarding', isCustomActive: (_, s) => s === '?tab=onboarding' },
+            { name: 'Employee Offboarding', path: '/recruitment?tab=offboarding', isCustomActive: (_, s) => s === '?tab=offboarding' },
+            { name: 'AI Cv Parser', path: '/recruitment?tab=cv-parser', isCustomActive: (_, s) => s === '?tab=cv-parser' },
+            { name: 'Post a Job', path: '/recruitment?tab=post-job', isCustomActive: (_, s) => s === '?tab=post-job' },
+            { name: 'Track Applicant', path: '/recruitment?tab=track', isCustomActive: (_, s) => s === '?tab=track' },
+            { name: 'Talent Pool', path: '/recruitment?tab=talent-pool', isCustomActive: (_, s) => s === '?tab=talent-pool' },
+            { name: 'Feedback and Interview form', path: '/recruitment?tab=feedback', isCustomActive: (_, s) => s === '?tab=feedback' },
+            { name: 'Candidate', path: '/recruitment?tab=candidates', isCustomActive: (p, s) => s === '?tab=candidates' || (p === '/recruitment' && s === '') },
+            { name: 'Vacancy', path: '/recruitment?tab=vacancies', isCustomActive: (_, s) => s === '?tab=vacancies' }
+          ]}
+        />
 
-              <NavLink 
-                to="/employees/config"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Configuration
-              </NavLink>
+        {/* Payroll */}
+        <SidebarNavGroup
+          label="Payroll"
+          icon={Wallet}
+          groupKey="payroll"
+          isGroupActive={isPayrollActive}
+          isChildActive={isPayrollChildActive}
+          isOpen={isOpen}
+          isExpanded={expandedGroups.payroll}
+          onToggle={toggleGroup}
+          location={location}
+          items={[
+            { name: 'Payroll in One Tap', path: '/payroll/one-tap' },
+            { name: 'Easy Employee Beniefit Advance', path: '/payroll/benefit-advance' }
+          ]}
+        />
 
-              <NavLink 
-                to="/employees/report"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Report
-              </NavLink>
+        {/* Events */}
+        <SidebarNavGroup
+          label="Events"
+          icon={CalendarRange}
+          groupKey="eventsGroup"
+          isGroupActive={isEventsActive}
+          isChildActive={isEventsChildActive}
+          isOpen={isOpen}
+          isExpanded={expandedGroups.eventsGroup}
+          onToggle={toggleGroup}
+          location={location}
+          items={[
+            { name: 'Support Events', path: '/events/support' },
+            { name: 'All Events', path: '/events/all' },
+            { name: 'Add Event', path: '/events/add' },
+            { name: 'Events Calendar', path: '/events/calendar' }
+          ]}
+        />
 
-              <NavLink 
-                to="/performance"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Performance
-              </NavLink>
-
-              <NavLink 
-                to="/time/overtime-pool"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Overttime Pool
-              </NavLink>
-
-              <NavLink 
-                to="/time/finance-request"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Employee finance requests
-              </NavLink>
-
-              <NavLink 
-                to="/time/wake-off"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Wake off
-              </NavLink>
-
-              <NavLink 
-                to="/time/time-off"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Time off Request
-              </NavLink>
-            </div>
-          )}
-        </div>
-
-        {/* Recruitment Collapsible Accordion */}
-        <div className="w-full">
-          <button
-            onClick={(e) => toggleGroup('recruitmentGroup', e)}
-            className={getGroupClass(isRecruitmentActive, isRecruitmentChildActive)}
-          >
-            <div className="flex items-center gap-3.5">
-              <UserPlus className="h-4.5 w-4.5 shrink-0" />
-              {isOpen && <span className="whitespace-nowrap">Recruitment</span>}
-            </div>
-          </button>
-
-          {/* Subsections under Recruitment */}
-          {isOpen && expandedGroups.recruitmentGroup && (
-            <div className="bg-[#086399] w-full text-xs font-bold text-slate-100 divide-y divide-[#0c5987] select-none">
-              {[
-                { name: 'Employee Onboarding', path: '/recruitment?tab=onboarding' },
-                { name: 'Employee Offboarding', path: '/recruitment?tab=offboarding' },
-                { name: 'AI Cv Parser', path: '/recruitment?tab=cv-parser' },
-                { name: 'Post a Job', path: '/recruitment?tab=post-job' },
-                { name: 'Track Applicant', path: '/recruitment?tab=track' },
-                { name: 'Talent Pool', path: '/recruitment?tab=talent-pool' },
-                { name: 'Feedback and Interview form', path: '/recruitment?tab=feedback' },
-                { name: 'Candidate', path: '/recruitment?tab=candidates' },
-                { name: 'Vacancy', path: '/recruitment?tab=vacancies' }
-              ].map(sub => (
-                <NavLink 
-                  key={sub.name}
-                  to={sub.path}
-                  className={() => {
-                    const isSubActive = location.search === `?tab=${sub.path.split('=')[1]}` || (location.pathname === '/recruitment' && location.search === '' && sub.path.includes('candidates'));
-                    return `block px-10 py-3 transition-all ${
-                      isSubActive
-                        ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' 
-                        : 'text-blue-100 hover:bg-[#07598a]'
-                    }`;
-                  }}
-                >
-                  {sub.name}
-                </NavLink>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Payroll Collapsible accordion group */}
-        <div className="w-full">
-          <button
-            onClick={(e) => toggleGroup('payroll', e)}
-            className={getGroupClass(isPayrollActive, isPayrollChildActive)}
-          >
-            <div className="flex items-center gap-3.5">
-              <Wallet className="h-4.5 w-4.5 shrink-0" />
-              {isOpen && <span className="whitespace-nowrap">Payroll</span>}
-            </div>
-          </button>
-
-          {/* Subsections under Payroll */}
-          {isOpen && expandedGroups.payroll && (
-            <div className="bg-[#086399] w-full text-xs font-bold text-slate-100 divide-y divide-[#0c5987] select-none">
-              <NavLink 
-                to="/payroll/one-tap"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Payroll in One Tap
-              </NavLink>
-              
-              <NavLink 
-                to="/payroll/benefit-advance"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Easy Employee Beniefit Advance
-              </NavLink>
-            </div>
-          )}
-        </div>
-
-        {/* Events Collapsible Accordion Group */}
-        <div className="w-full">
-          <button
-            onClick={(e) => toggleGroup('eventsGroup', e)}
-            className={getGroupClass(isEventsActive, isEventsChildActive)}
-          >
-            <div className="flex items-center gap-3.5">
-              <CalendarRange className="h-4.5 w-4.5 shrink-0" />
-              {isOpen && <span className="whitespace-nowrap">Events</span>}
-            </div>
-          </button>
-
-          {/* Subsections under Events */}
-          {isOpen && expandedGroups.eventsGroup && (
-            <div className="bg-[#086399] w-full text-xs font-bold text-slate-100 divide-y divide-[#0c5987] select-none">
-              <NavLink 
-                to="/events/support"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Support Events
-              </NavLink>
-              <NavLink 
-                to="/events/all"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                All Events
-              </NavLink>
-              <NavLink 
-                to="/events/add"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Add Event
-              </NavLink>
-              <NavLink 
-                to="/events/calendar"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Events Calendar
-              </NavLink>
-            </div>
-          )}
-        </div>
-
-        {/* Employee self service Collapsible Accordion Group */}
-        <div className="w-full">
-          <button
-            onClick={(e) => toggleGroup('selfServiceGroup', e)}
-            className={getGroupClass(isSelfServiceActive, isSelfServiceChildActive)}
-          >
-            <div className="flex items-center gap-3.5">
-              <User className="h-4.5 w-4.5 shrink-0" />
-              {isOpen && <span className="whitespace-nowrap">Employee self service</span>}
-            </div>
-          </button>
-
-          {/* Subsections under Self Service */}
-          {isOpen && expandedGroups.selfServiceGroup && (
-            <div className="bg-[#086399] w-full text-xs font-bold text-slate-100 divide-y divide-[#0c5987] select-none">
-              <NavLink 
-                to="/self-service/travel"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Travel Documents
-              </NavLink>
-              <NavLink 
-                to="/self-service/company-docs"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Company Doc-Center
-              </NavLink>
-              <NavLink 
-                to="/self-service/hr-letters"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                HR Letters
-              </NavLink>
-              <NavLink 
-                to="/self-service/mass-messages"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Mass Messages
-              </NavLink>
-              <NavLink 
-                to="/self-service/leave"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Leave
-              </NavLink>
-              <NavLink 
-                to="/my-info"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                My Info
-              </NavLink>
-            </div>
-          )}
-        </div>
+        {/* Employee self service */}
+        <SidebarNavGroup
+          label="Employee self service"
+          icon={User}
+          groupKey="selfServiceGroup"
+          isGroupActive={isSelfServiceActive}
+          isChildActive={isSelfServiceChildActive}
+          isOpen={isOpen}
+          isExpanded={expandedGroups.selfServiceGroup}
+          onToggle={toggleGroup}
+          location={location}
+          items={[
+            { name: 'Travel Documents', path: '/self-service/travel' },
+            { name: 'Company Doc-Center', path: '/self-service/company-docs' },
+            { name: 'HR Letters', path: '/self-service/hr-letters' },
+            { name: 'Mass Messages', path: '/self-service/mass-messages' },
+            { name: 'Leave', path: '/self-service/leave' },
+            { name: 'My Info', path: '/my-info' }
+          ]}
+        />
 
         {/* Reporting and Analytics */}
-        <NavLink
-          to="/documents"
-          className={({ isActive }) => getLinkClass(isActive)}
-        >
-          <FolderOpen className="h-4.5 w-4.5 shrink-0" />
-          {isOpen && <span className="whitespace-nowrap">Reporting and Analytics</span>}
-        </NavLink>
+        <SidebarNavLink to="/documents" icon={FolderOpen} label="Reporting and Analytics" isOpen={isOpen} />
 
-        {/* Notifications (Collapsible Accordion Group) */}
-        <div className="w-full">
-          <button
-            onClick={(e) => toggleGroup('notifications', e)}
-            className={getGroupClass(isNotificationsActive, isNotificationsChildActive)}
-          >
-            <div className="flex items-center gap-3.5">
-              <Bell className="h-4.5 w-4.5 shrink-0" />
-              {isOpen && <span className="whitespace-nowrap">Notifications</span>}
-            </div>
-          </button>
-
-          {/* Subsections under Notifications */}
-          {isOpen && expandedGroups.notifications && (
-            <div className="bg-[#086399] w-full text-xs font-bold text-slate-100 divide-y divide-[#0c5987] select-none">
-              <NavLink 
-                to="/notifications/email"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Email
-              </NavLink>
-              <NavLink 
-                to="/notifications/sms"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                SMS
-              </NavLink>
-              <NavLink 
-                to="/notifications/whatsapp"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                What's App
-              </NavLink>
-              <NavLink 
-                to="/notifications/employee-app"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Employee App
-              </NavLink>
-            </div>
-          )}
-        </div>
+        {/* Notifications */}
+        <SidebarNavGroup
+          label="Notifications"
+          icon={Bell}
+          groupKey="notifications"
+          isGroupActive={isNotificationsActive}
+          isChildActive={isNotificationsChildActive}
+          isOpen={isOpen}
+          isExpanded={expandedGroups.notifications}
+          onToggle={toggleGroup}
+          location={location}
+          items={[
+            { name: 'Email', path: '/notifications/email' },
+            { name: 'SMS', path: '/notifications/sms' },
+            { name: 'What\'s App', path: '/notifications/whatsapp' },
+            { name: 'Employee App', path: '/notifications/employee-app' }
+          ]}
+        />
 
         {/* Miscellaneous Request */}
-        <NavLink
-          to="/support"
-          className={({ isActive }) => getLinkClass(isActive)}
-        >
-          <Mail className="h-4.5 w-4.5 shrink-0" />
-          {isOpen && <span className="whitespace-nowrap">Miscellaneous Request</span>}
-        </NavLink>
+        <SidebarNavLink to="/support" icon={Mail} label="Miscellaneous Request" isOpen={isOpen} />
 
         {/* Monitoring Inhouse Association */}
-        <div className="w-full">
-          <button
-            onClick={(e) => toggleGroup('association', e)}
-            className={getGroupClass(isAssociationActive, isAssociationChildActive)}
-          >
-            <div className="flex items-center gap-3.5">
-              <Link2 className="h-4.5 w-4.5 shrink-0" />
-              {isOpen && <span className="whitespace-nowrap">Monitoring Inhouse Association</span>}
-            </div>
-          </button>
+        <SidebarNavGroup
+          label="Monitoring Inhouse Association"
+          icon={Link2}
+          groupKey="association"
+          isGroupActive={isAssociationActive}
+          isChildActive={isAssociationChildActive}
+          isOpen={isOpen}
+          isExpanded={expandedGroups.association}
+          onToggle={toggleGroup}
+          location={location}
+          items={[
+            { name: 'New Association Request', path: '/association/new' },
+            { name: 'Existing', path: '/association/existing' }
+          ]}
+        />
 
-          {/* Subsections: New Association Request & Existing */}
-          {isOpen && expandedGroups.association && (
-            <div className="bg-[#086399] w-full text-xs font-bold text-slate-100 divide-y divide-[#0c5987] select-none">
-              <NavLink 
-                to="/association/new"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                New Association Request
-              </NavLink>
-              
-              <NavLink 
-                to="/association/existing"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Existing
-              </NavLink>
-            </div>
-          )}
-        </div>
+        {/* Admin */}
+        <SidebarNavGroup
+          label="Admin"
+          icon={Settings}
+          groupKey="adminGroup"
+          isGroupActive={isAdminActive}
+          isChildActive={isAdminChildActive}
+          isOpen={isOpen}
+          isExpanded={expandedGroups.adminGroup}
+          onToggle={toggleGroup}
+          location={location}
+          items={[
+            { name: 'User Management', path: '/admin/user-management' },
+            { name: 'Job', path: '/admin/job' },
+            { name: 'Organization', path: '/admin/organization' },
+            { name: 'Qualification', path: '/admin/qualification' },
+            { name: 'Nationalities', path: '/admin/nationalities' },
+            { name: 'Corporate Branding', path: '/admin/branding' },
+            { name: 'Configuration', path: '/admin/configuration' }
+          ]}
+        />
 
-        {/* Admin Collapsible Accordion Group */}
-        <div className="w-full">
-          <button
-            onClick={(e) => toggleGroup('adminGroup', e)}
-            className={getGroupClass(isAdminActive, isAdminChildActive)}
-          >
-            <div className="flex items-center gap-3.5">
-              <Settings className="h-4.5 w-4.5 shrink-0" />
-              {isOpen && <span className="whitespace-nowrap">Admin</span>}
-            </div>
-          </button>
-
-          {/* Subsections under Admin */}
-          {isOpen && expandedGroups.adminGroup && (
-            <div className="bg-[#086399] w-full text-xs font-bold text-slate-100 divide-y divide-[#0c5987] select-none">
-              {[
-                { name: 'User Management', path: '/admin/user-management' },
-                { name: 'Job', path: '/admin/job' },
-                { name: 'Organization', path: '/admin/organization' },
-                { name: 'Qualification', path: '/admin/qualification' },
-                { name: 'Nationalities', path: '/admin/nationalities' },
-                { name: 'Corporate Branding', path: '/admin/branding' },
-                { name: 'Configuration', path: '/admin/configuration' }
-              ].map(sub => (
-                <NavLink 
-                  key={sub.name}
-                  to={sub.path}
-                  className={({ isActive }) => 
-                    `block px-10 py-3 transition-all ${
-                      isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                    }`
-                  }
-                >
-                  {sub.name}
-                </NavLink>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Time Collapsible Accordion Group */}
-        <div className="w-full">
-          <button
-            onClick={(e) => toggleGroup('timeGroup', e)}
-            className={getGroupClass(isTimeGroupActive, isTimeChildActive)}
-          >
-            <div className="flex items-center gap-3.5">
-              <Clock className="h-4.5 w-4.5 shrink-0" />
-              {isOpen && <span className="whitespace-nowrap">Time</span>}
-            </div>
-          </button>
-
-          {/* Subsections under Time */}
-          {isOpen && expandedGroups.timeGroup && (
-            <div className="bg-[#086399] w-full text-xs font-bold text-slate-100 divide-y divide-[#0c5987] select-none">
-              <NavLink 
-                to="/time/timesheets"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Timesheets
-              </NavLink>
-              <NavLink 
-                to="/time/attendance"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Attendance
-              </NavLink>
-              <NavLink 
-                to="/time/report"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Report
-              </NavLink>
-              <NavLink 
-                to="/time/project-info"
-                className={({ isActive }) => 
-                  `block px-10 py-3 transition-all ${
-                    isActive ? 'bg-white text-slate-900 border-b border-slate-200 font-extrabold shadow-sm' : 'text-blue-100 hover:bg-[#07598a]'
-                  }`
-                }
-              >
-                Project Info
-              </NavLink>
-            </div>
-          )}
-        </div>
+        {/* Time */}
+        <SidebarNavGroup
+          label="Time"
+          icon={Clock}
+          groupKey="timeGroup"
+          isGroupActive={isTimeGroupActive}
+          isChildActive={isTimeChildActive}
+          isOpen={isOpen}
+          isExpanded={expandedGroups.timeGroup}
+          onToggle={toggleGroup}
+          location={location}
+          items={[
+            { name: 'Timesheets', path: '/time/timesheets' },
+            { name: 'Attendance', path: '/time/attendance' },
+            { name: 'Report', path: '/time/report' },
+            { name: 'Project Info', path: '/time/project-info' }
+          ]}
+        />
 
         {/* Maintenance */}
-        <NavLink
-          to="/maintenance"
-          className={({ isActive }) => getLinkClass(isActive)}
-        >
-          <Wrench className="h-4.5 w-4.5 shrink-0" />
-          {isOpen && <span className="whitespace-nowrap">Maintenance</span>}
-        </NavLink>
+        <SidebarNavLink to="/maintenance" icon={Wrench} label="Maintenance" isOpen={isOpen} />
 
       </div>
-    </aside>
+      </aside>
+    </>
   );
 };
+
 export default Sidebar;
+

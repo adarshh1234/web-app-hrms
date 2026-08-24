@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Share2, Copy } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 interface LetterTemplate {
   id: string;
@@ -9,6 +10,7 @@ interface LetterTemplate {
 }
 
 export const HRLettersPage: React.FC = () => {
+  const toast = useToast();
   const [selectedLetter, setSelectedLetter] = useState<string>('1');
 
   const templates: LetterTemplate[] = [
@@ -40,12 +42,10 @@ export const HRLettersPage: React.FC = () => {
 
   const currentTemplate = templates.find(t => t.id === selectedLetter) || templates[0];
 
-  // Controlled states for active edits
   const [editedSubject, setEditedSubject] = useState(currentTemplate.subject);
   const [editedMessage, setEditedMessage] = useState(currentTemplate.message);
   const [bestRegards, setBestRegards] = useState('Best regards,\nHuman Resources Department\n[Company Name]');
 
-  // Sync state if template changes
   const handleSelectTemplate = (id: string) => {
     setSelectedLetter(id);
     const target = templates.find(t => t.id === id) || templates[0];
@@ -55,15 +55,11 @@ export const HRLettersPage: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      {/* Title */}
       <div>
         <h1 className="text-xl font-bold text-slate-900 m-0">HR Letter</h1>
       </div>
 
-      {/* Two Column Layout (Composer) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* Left Side: Recipients List (width 4/12 grid span) */}
         <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
           <span className="block text-xs font-bold text-slate-700">Recipients</span>
           
@@ -76,13 +72,12 @@ export const HRLettersPage: React.FC = () => {
             />
           </div>
 
-          {/* Vertical list of letter templates */}
           <div className="space-y-2 pt-2">
             {templates.map(t => (
               <button
                 key={t.id}
                 onClick={() => handleSelectTemplate(t.id)}
-                className={`w-full text-left px-4 py-3 rounded-lg text-xs font-bold transition-all border ${
+                className={`w-full text-left px-4 py-3 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
                   selectedLetter === t.id 
                     ? 'bg-blue-50 text-[#0473b8] border-blue-200 font-extrabold shadow-sm'
                     : 'bg-white text-slate-500 border-slate-100 hover:bg-slate-50'
@@ -94,10 +89,7 @@ export const HRLettersPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Side: Details Form (width 8/12 grid span) */}
         <div className="lg:col-span-8 space-y-6">
-          
-          {/* Card 1: Subject */}
           <div className="bg-white border border-slate-205 rounded-xl p-5 shadow-sm space-y-3">
             <span className="block text-xs font-bold text-slate-700">Subject</span>
             <input 
@@ -108,9 +100,8 @@ export const HRLettersPage: React.FC = () => {
             />
           </div>
 
-          {/* Card 2: Message Text Area */}
           <div className="bg-white border border-slate-205 rounded-xl p-5 shadow-sm space-y-3">
-            <span className="block text-xs font-bold text-slate-700">Massage</span>
+            <span className="block text-xs font-bold text-slate-700">Message</span>
             <textarea 
               rows={8}
               value={editedMessage}
@@ -119,7 +110,6 @@ export const HRLettersPage: React.FC = () => {
             />
           </div>
 
-          {/* Card 3: Best Regards Footer Info */}
           <div className="bg-white border border-slate-205 rounded-xl p-5 shadow-sm space-y-3">
             <span className="block text-xs font-bold text-slate-700">Best regards</span>
             <textarea 
@@ -130,27 +120,29 @@ export const HRLettersPage: React.FC = () => {
             />
           </div>
 
-          {/* Bottom Actions Row */}
           <div className="flex justify-end gap-3.5 pt-2">
             <button 
-              onClick={() => alert("Letter saved to clipboard!")}
+              onClick={() => {
+                navigator.clipboard.writeText(`${editedSubject}\n\n${editedMessage}\n\n${bestRegards}`);
+                toast.success('Letter copied to clipboard!');
+              }}
               className="p-3 bg-[#0473b8] hover:bg-[#03629e] text-white rounded-lg shadow-sm cursor-pointer transition-colors"
+              title="Copy to clipboard"
             >
               <Copy className="h-4 w-4" />
             </button>
             <button 
-              onClick={() => alert("Sharing draft envelope...")}
+              onClick={() => toast.info('Sharing draft envelope...')}
               className="p-3 bg-[#0473b8] hover:bg-[#03629e] text-white rounded-lg shadow-sm cursor-pointer transition-colors"
+              title="Share"
             >
               <Share2 className="h-4 w-4" />
             </button>
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 };
+
 export default HRLettersPage;

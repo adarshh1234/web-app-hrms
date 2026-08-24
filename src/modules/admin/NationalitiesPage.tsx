@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 interface NationalityRecord {
   id: string;
@@ -7,6 +8,7 @@ interface NationalityRecord {
 }
 
 export const NationalitiesPage: React.FC = () => {
+  const toast = useToast();
   const [currentPage, setCurrentPage] = useState(1);
 
   const [records, setRecords] = useState<NationalityRecord[]>([
@@ -46,7 +48,7 @@ export const NationalitiesPage: React.FC = () => {
         <div className="flex justify-between items-center pb-1">
           <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
           <button 
-            onClick={() => alert("Add new nationality")}
+            onClick={() => toast.info("Add new nationality")}
             className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors cursor-pointer"
           >
             <Plus className="h-3 w-3" />
@@ -62,15 +64,15 @@ export const NationalitiesPage: React.FC = () => {
 
         {/* Rows List (18 rows repeating as per Image 4) */}
         <div className="space-y-1.5 max-h-[500px] overflow-y-auto pr-1">
-          {records.map((r, index) => (
+          {records.map((r) => (
             <div 
-              key={index}
+              key={r.id}
               className="grid grid-cols-2 items-center bg-white border border-slate-200 rounded-lg py-2.5 px-4 shadow-sm text-xs font-bold text-slate-800 hover:border-slate-300 transition-all"
             >
               <span>{r.name}</span>
               
               <div className="flex justify-end gap-2.5">
-                <button onClick={() => alert(`Edit ${r.name}`)} className="p-1 text-slate-400 hover:text-blue-600">
+                <button onClick={() => toast.info(`Edit ${r.name}`)} className="p-1 text-slate-400 hover:text-blue-600">
                   <Edit2 className="h-3.5 w-3.5" />
                 </button>
                 <button onClick={() => handleDelete(r.id)} className="p-1 text-slate-400 hover:text-rose-600">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SlidersHorizontal, Plus, Edit2, Share2, MoreVertical } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 interface EventCard {
   status: 'In Progress' | 'Up coming' | 'Planing';
@@ -18,6 +19,7 @@ interface TaskRow {
 }
 
 export const AllEventsPage: React.FC = () => {
+  const toast = useToast();
   const [activeTaskTab, setActiveTaskTab] = useState<'All' | 'Today' | 'Upcoming' | 'Completed'>('Upcoming');
 
   const events: EventCard[] = [
@@ -48,7 +50,7 @@ export const AllEventsPage: React.FC = () => {
             <span>Filter</span>
           </button>
           <button 
-            onClick={() => alert("Redirecting to Add Event tab")}
+            onClick={() => toast.info("Redirecting to Add Event tab")}
             className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer transition-colors"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -58,8 +60,8 @@ export const AllEventsPage: React.FC = () => {
 
         {/* 3 Columns Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {events.map((e, idx) => (
-            <div key={idx} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 hover:shadow-md transition-all relative">
+          {events.map((e) => (
+            <div key={e.title} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 hover:shadow-md transition-all relative">
               
               {/* Header Status & Dots */}
               <div className="flex justify-between items-start">
@@ -138,7 +140,7 @@ export const AllEventsPage: React.FC = () => {
           <h2 className="text-base font-bold text-slate-900 m-0">Events Task Overview</h2>
           
           <button 
-            onClick={() => alert("Add tasks modal popup")}
+            onClick={() => toast.info("Add tasks modal popup")}
             className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer transition-colors"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -176,9 +178,9 @@ export const AllEventsPage: React.FC = () => {
 
           {/* Table Rows */}
           <div className="space-y-2">
-            {tasks.map((t, idx) => (
+            {tasks.map((t) => (
               <div 
-                key={idx}
+                key={t.name}
                 className="grid grid-cols-5 items-center bg-white border border-slate-200 rounded-lg py-3 px-4 shadow-xs text-xs font-bold text-slate-800 hover:border-slate-350 transition-all"
               >
                 <span>{t.name}</span>

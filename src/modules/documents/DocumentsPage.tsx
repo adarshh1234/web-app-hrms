@@ -1,6 +1,8 @@
 import React from 'react';
+import { useToast } from '../../hooks/useToast';
 
 export const DocumentsPage: React.FC = () => {
+  const toast = useToast();
   const reportingCards = [
     { title: 'Leave report' },
     { title: 'Payroll report' },
@@ -30,10 +32,10 @@ export const DocumentsPage: React.FC = () => {
         
         {/* Grid layout matching 4 columns */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {reportingCards.map((card, idx) => (
+          {reportingCards.map((card) => (
             <div 
-              key={idx}
-              onClick={() => alert(`Opening ${card.title} details!`)}
+              key={card.title}
+              onClick={() => toast.info(`Opening ${card.title} details!`)}
               className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-slate-350 transition-all flex items-center justify-center h-24 cursor-pointer text-center select-none"
             >
               <span className="text-xs font-bold text-slate-800 tracking-wide">{card.title}</span>
@@ -48,10 +50,10 @@ export const DocumentsPage: React.FC = () => {
         
         {/* Grid layout matching 3 columns */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {analyticsCards.map((card, idx) => (
+          {analyticsCards.map((card) => (
             <div 
-              key={idx}
-              onClick={() => alert(`Opening analytics for: ${card.title}!`)}
+              key={card.title}
+              onClick={() => toast.info(`Opening analytics for: ${card.title}!`)}
               className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-slate-350 transition-all flex items-center justify-center h-24 cursor-pointer text-center select-none"
             >
               <span className="text-xs font-bold text-slate-800 tracking-wide">{card.title}</span>

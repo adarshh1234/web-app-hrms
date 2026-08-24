@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, ChevronDown, Search, X } from 'lucide-react';
+import { Clock, ChevronDown, Search, X } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 export const AddEventPage: React.FC = () => {
+  const toast = useToast();
   // Toggle states
   const [locationType, setLocationType] = useState<'in-person' | 'online'>('in-person');
   
@@ -34,7 +36,7 @@ export const AddEventPage: React.FC = () => {
   };
 
   const handleCreate = () => {
-    alert("Event created successfully!");
+    toast.success("Event created successfully!");
   };
 
   return (
@@ -260,9 +262,9 @@ export const AddEventPage: React.FC = () => {
               <div className="space-y-1.5">
                 <span className="block text-[10px] text-slate-400 uppercase font-bold tracking-wider">Selected Employees</span>
                 <div className="flex flex-wrap gap-2">
-                  {participants.map((name, idx) => (
+                  {participants.map((name) => (
                     <span 
-                      key={idx}
+                      key={name}
                       className="flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg border border-slate-200"
                     >
                       <span>{name}</span>
@@ -316,7 +318,7 @@ export const AddEventPage: React.FC = () => {
                 <label className="block text-[10px] text-slate-405 uppercase tracking-wider">Check List</label>
                 <div className="space-y-2">
                   {checklistItems.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
+                    <div key={`checklist-${idx}`} className="flex items-center gap-2">
                       <input type="checkbox" className="rounded border-slate-350" />
                       <input 
                         type="text" 

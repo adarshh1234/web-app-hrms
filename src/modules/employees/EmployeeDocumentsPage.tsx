@@ -8,8 +8,11 @@ import {
   SlidersHorizontal,
   ChevronDown
 } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
+import Button from '../../components/common/Button';
 
 export const EmployeeDocumentsPage: React.FC = () => {
+  const toast = useToast();
   const [folders, setFolders] = useState([
     { id: '1', name: 'Personal Information', count: 25 },
     { id: '2', name: 'Training Report', count: 25 },
@@ -58,13 +61,14 @@ export const EmployeeDocumentsPage: React.FC = () => {
 
         {/* Right buttons */}
         <div className="flex items-center gap-2.5">
-          <button 
-            onClick={() => alert("Upload documents")}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors"
+          <Button 
+            variant="primary"
+            size="md"
+            icon={<Upload className="h-3.5 w-3.5 text-white" />}
+            onClick={() => toast.info("Upload documents")}
           >
-            <Upload className="h-3.5 w-3.5 text-white" />
-            <span>Upload New</span>
-          </button>
+            Upload New
+          </Button>
           <button 
             onClick={handleCreateFolder}
             className="flex items-center gap-1.5 px-4 py-2 border border-[#0473b8] hover:bg-blue-50 text-[#0473b8] text-xs font-bold rounded-lg transition-colors"
@@ -77,18 +81,18 @@ export const EmployeeDocumentsPage: React.FC = () => {
 
       {/* Folder grid matching 4-column design */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-        {folders.map((f, idx) => (
+        {folders.map((f) => (
           <div 
-            key={idx} 
+            key={f.id} 
             className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-36 cursor-pointer"
-            onClick={() => alert(`Opening folder: ${f.name}`)}
+            onClick={() => toast.info(`Opening folder: ${f.name}`)}
           >
             <div className="flex justify-between items-start">
               <Folder className="h-6 w-6 text-slate-700" />
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
-                  alert("Folder menu options");
+                  toast.info("Folder menu options");
                 }}
                 className="text-slate-400 hover:text-slate-700 p-1"
               >

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 export const JobConfigPage: React.FC = () => {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'job' | 'grades' | 'status' | 'categories' | 'shifts'>('grades');
 
   // Subtab 2: Pay Grades
@@ -55,16 +57,16 @@ export const JobConfigPage: React.FC = () => {
       
       {/* 5 Tab pills at the top */}
       <div className="flex flex-wrap gap-3">
-        {[
+        {([
           { id: 'job', label: 'Job' },
           { id: 'grades', label: 'Pay Grades' },
           { id: 'status', label: 'Employment Status' },
           { id: 'categories', label: 'Job Categories' },
           { id: 'shifts', label: 'Work Shifts' }
-        ].map(pill => (
+        ] as const).map(pill => (
           <button
             key={pill.id}
-            onClick={() => setActiveTab(pill.id as any)}
+            onClick={() => setActiveTab(pill.id)}
             className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${
               activeTab === pill.id 
                 ? 'bg-blue-50 text-[#0473b8] font-extrabold border border-blue-200 shadow-sm'
@@ -85,7 +87,7 @@ export const JobConfigPage: React.FC = () => {
             <div className="flex justify-between items-center pb-1">
               <span className="text-[10px] font-bold text-slate-500">(0) Records Found</span>
               <button 
-                onClick={() => alert("Add job title")}
+                onClick={() => toast.info("Add job title")}
                 className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors"
               >
                 <Plus className="h-3 w-3" />
@@ -108,7 +110,7 @@ export const JobConfigPage: React.FC = () => {
             <div className="flex justify-between items-center pb-1">
               <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
               <button 
-                onClick={() => alert("Add pay grade")}
+                onClick={() => toast.info("Add pay grade")}
                 className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors"
               >
                 <Plus className="h-3 w-3" />
@@ -134,7 +136,7 @@ export const JobConfigPage: React.FC = () => {
                   <span className="text-slate-500 font-semibold">{g.currency}</span>
                   
                   <div className="flex justify-end gap-2.5">
-                    <button onClick={() => alert(`Edit ${g.name}`)} className="p-1 text-slate-400 hover:text-blue-600">
+                    <button onClick={() => toast.info(`Edit ${g.name}`)} className="p-1 text-slate-400 hover:text-blue-600">
                       <Edit2 className="h-3.5 w-3.5" />
                     </button>
                     <button onClick={() => handleDeleteGrade(g.id)} className="p-1 text-slate-400 hover:text-rose-600">
@@ -158,7 +160,7 @@ export const JobConfigPage: React.FC = () => {
             <div className="flex justify-between items-center pb-1">
               <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
               <button 
-                onClick={() => alert("Add employment status")}
+                onClick={() => toast.info("Add employment status")}
                 className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors"
               >
                 <Plus className="h-3 w-3" />
@@ -182,7 +184,7 @@ export const JobConfigPage: React.FC = () => {
                   <span>{s.status}</span>
                   
                   <div className="flex justify-end gap-2.5">
-                    <button onClick={() => alert(`Edit ${s.status}`)} className="p-1 text-slate-400 hover:text-blue-600">
+                    <button onClick={() => toast.info(`Edit ${s.status}`)} className="p-1 text-slate-400 hover:text-blue-600">
                       <Edit2 className="h-3.5 w-3.5" />
                     </button>
                     <button onClick={() => handleDeleteStatus(s.id)} className="p-1 text-slate-400 hover:text-rose-600">
@@ -206,7 +208,7 @@ export const JobConfigPage: React.FC = () => {
             <div className="flex justify-between items-center pb-1">
               <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
               <button 
-                onClick={() => alert("Add job category")}
+                onClick={() => toast.info("Add job category")}
                 className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors"
               >
                 <Plus className="h-3 w-3" />
@@ -230,7 +232,7 @@ export const JobConfigPage: React.FC = () => {
                   <span>{c.category}</span>
                   
                   <div className="flex justify-end gap-2.5">
-                    <button onClick={() => alert(`Edit ${c.category}`)} className="p-1 text-slate-400 hover:text-blue-600">
+                    <button onClick={() => toast.info(`Edit ${c.category}`)} className="p-1 text-slate-400 hover:text-blue-600">
                       <Edit2 className="h-3.5 w-3.5" />
                     </button>
                     <button onClick={() => handleDeleteCategory(c.id)} className="p-1 text-slate-400 hover:text-rose-600">
@@ -254,7 +256,7 @@ export const JobConfigPage: React.FC = () => {
             <div className="flex justify-between items-center pb-1">
               <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
               <button 
-                onClick={() => alert("Add work shift")}
+                onClick={() => toast.info("Add work shift")}
                 className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors"
               >
                 <Plus className="h-3 w-3" />
@@ -284,7 +286,7 @@ export const JobConfigPage: React.FC = () => {
                   <span>{s.hours}</span>
                   
                   <div className="flex justify-end gap-2.5">
-                    <button onClick={() => alert(`Edit ${s.name} shift`)} className="p-1 text-slate-400 hover:text-blue-600">
+                    <button onClick={() => toast.info(`Edit ${s.name} shift`)} className="p-1 text-slate-400 hover:text-blue-600">
                       <Edit2 className="h-3.5 w-3.5" />
                     </button>
                     <button onClick={() => handleDeleteShift(s.id)} className="p-1 text-slate-400 hover:text-rose-600">

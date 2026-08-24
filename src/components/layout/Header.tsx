@@ -1,27 +1,43 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, Bell } from 'lucide-react';
+import { Search, Bell, Menu } from 'lucide-react';
 
 interface HeaderProps {
   sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
+  setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  onToggleMobile: () => void;
   onLogout: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ sidebarOpen, onLogout }) => {
+export const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen, onToggleMobile, onLogout }) => {
   const location = useLocation();
   const hideSearch = location.pathname === '/employees/list' || location.pathname === '/employees';
 
   return (
     <header 
-      className={`fixed top-0 right-0 z-20 flex h-16 items-center justify-between border-b border-slate-150 bg-white px-8 transition-all duration-300 ${
-        sidebarOpen ? 'left-72' : 'left-20'
+      className={`fixed top-0 right-0 z-20 flex h-16 items-center justify-between border-b border-slate-150 bg-white px-4 md:px-8 transition-all duration-300 ${
+        sidebarOpen ? 'left-0 md:left-72' : 'left-0 md:left-20'
       }`}
     >
-      {/* Left side: Search input matching Figma layout */}
-      <div className="flex-1 max-w-md">
+      <div className="flex items-center gap-3 flex-1 max-w-md">
+        {/* Mobile: toggle mobile drawer */}
+        <button
+          onClick={onToggleMobile}
+          className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors md:hidden"
+          title="Toggle Sidebar"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
+        {/* Desktop: toggle sidebar collapse */}
+        <button
+          onClick={() => setSidebarOpen((prev) => !prev)}
+          className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors hidden md:inline-flex"
+          title="Toggle Sidebar"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
         {!hideSearch && (
-          <div className="relative">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-800" />
             <input 
               type="text" 

@@ -1,159 +1,39 @@
-// TypeScript interfaces for our HR system
+import {
+  Employee,
+  Candidate,
+  Vacancy,
+  LeaveRequest,
+  LeaveBalance,
+  LeaveEntitlementRecord,
+  AttendanceRecord,
+  FinanceRequest,
+  CompanyEvent,
+  PerformanceReview,
+  SupportTicket,
+  AssociationRequest,
+  MessageLog,
+  CorporateBranding,
+  LeavePeriodConfig,
+  LeaveTypeConfig,
+  WorkWeekConfig,
+  HolidayRecord,
+} from '../types';
 
-export interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  department: string;
-  jobTitle: string;
-  subUnit: string;
-  location: string;
-  supervisor: string;
-  employmentStatus: 'Full-Time' | 'Part-Time' | 'Contract' | 'Onboarding';
-  attendanceStatus: 'Present' | 'Late' | 'On-Leave';
-  // ESS details
-  otherId?: string;
-  licenseNumber?: string;
-  licenseExpiry?: string;
-  nationality?: string;
-  maritalStatus?: 'Single' | 'Married' | 'Divorced' | 'Other';
-  dob?: string;
-  gender?: 'Male' | 'Female' | 'Other';
-  bloodType?: string;
-  customField?: string;
-}
-
-export interface Candidate {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  vacancy: string;
-  hiringManager: string;
-  dateApplied: string;
-  status: 'Applied' | 'Shortlisted' | 'Interview' | 'Selected' | 'Onboarding' | 'Rejected';
-  experienceYears: number;
-  skills: string[];
-}
-
-export interface Vacancy {
-  id: string;
-  jobTitle: string;
-  hiringManager: string;
-  datePosted: string;
-  status: 'Available' | 'Closed';
-  noOfOpenings: number;
-  department: string;
-  description: string;
-  minSalary?: number;
-  maxSalary?: number;
-  experienceLevel?: string;
-  requiredQualifications?: string;
-}
-
-export interface LeaveRequest {
-  id: string;
-  employeeName: string;
-  department: string;
-  leaveType: string;
-  fromDate: string;
-  toDate: string;
-  numberOfDays: number;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  comments: string;
-  dateRequested: string;
-}
-
-export interface LeaveBalance {
-  leaveType: string;
-  entitled: number;
-  pending: number;
-  scheduled: number;
-  taken: number;
-  balance: number;
-}
-
-export interface AttendanceRecord {
-  id: string;
-  employeeName: string;
-  date: string;
-  punchIn: string;
-  punchInNote: string;
-  punchOut: string;
-  punchOutNote: string;
-  durationHours: number;
-  status: 'Completed' | 'Pending' | 'Missing Out';
-}
-
-export interface FinanceRequest {
-  id: string;
-  employeeName: string;
-  employeeId: string;
-  requestType: string;
-  department: string;
-  dateRequested: string;
-  amount: number;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  description: string;
-}
-
-export interface CompanyEvent {
-  id: string;
-  title: string;
-  type: 'Training Session' | 'Team Meeting' | 'Holiday' | 'Interview' | 'Support Event';
-  description: string;
-  startDate: string;
-  endDate: string;
-  startTime: string;
-  endTime: string;
-  location: string;
-  venue: string;
-  status: 'Planning' | 'In Progress' | 'Upcoming' | 'Completed';
-  participants: string[];
-  tasks: { id: string; name: string; assignee: string; dueDate: string; status: 'Not Started' | 'In Progress' | 'Completed' }[];
-}
-
-export interface PerformanceReview {
-  id: string;
-  employeeName: string;
-  reviewer: string;
-  jobTitle: string;
-  reviewPeriod: string;
-  dueDate: string;
-  status: 'Pending Self Review' | 'Pending Supervisor Review' | 'Completed';
-  rating?: number;
-}
-
-export interface SupportTicket {
-  id: string;
-  title: string;
-  description: string;
-  createdDate: string;
-  resolvedDate?: string;
-  category: 'System Error' | 'Access Issue' | 'Hardware' | 'Other';
-  priority: 'High' | 'Medium' | 'Low';
-  status: 'Open' | 'Resolved';
-}
-
-export interface AssociationRequest {
-  id: string;
-  employeeName: string;
-  dateRequested: string;
-  requestDetails: string;
-  status: 'Pending' | 'Accepted' | 'Cancelled';
-}
-
-export interface MessageLog {
-  id: string;
-  channel: 'WhatsApp' | 'SMS' | 'Email' | 'Employee App';
-  subject: string;
-  recipients: string;
-  message: string;
-  dateSent: string;
-  status: 'Sent' | 'Draft';
-  replies?: number;
-}
+export type {
+  Employee,
+  Candidate,
+  Vacancy,
+  LeaveRequest,
+  LeaveBalance,
+  AttendanceRecord,
+  FinanceRequest,
+  CompanyEvent,
+  PerformanceReview,
+  SupportTicket,
+  AssociationRequest,
+  MessageLog,
+  CorporateBranding,
+};
 
 // Initial Data Sets
 const initialEmployees: Employee[] = [
@@ -391,6 +271,34 @@ const initialLeaveBalances: LeaveBalance[] = [
   { leaveType: "CAN-Sick", entitled: 10, pending: 0, scheduled: 0, taken: 1, balance: 9 }
 ];
 
+const initialLeaveEntitlements: LeaveEntitlementRecord[] = [
+  {
+    id: "ENT001",
+    leaveType: "CAN-Vacation",
+    entitlementType: "Added",
+    validFrom: "2026-01-01",
+    validTo: "2026-12-31",
+    days: 15
+  },
+  {
+    id: "ENT002",
+    leaveType: "CAN-Personal",
+    entitlementType: "Added",
+    validFrom: "2026-01-01",
+    validTo: "2026-12-31",
+    days: 5
+  },
+  {
+    id: "ENT003",
+    leaveType: "CAN-Sick",
+    entitlementType: "Added",
+    validFrom: "2026-01-01",
+    validTo: "2026-12-31",
+    days: 10
+  }
+];
+
+
 const initialAttendanceRecords: AttendanceRecord[] = [
   {
     id: "ATT001",
@@ -606,6 +514,9 @@ export const saveLeaveRequests = (data: LeaveRequest[]) => setStorageItem('hr_le
 export const getLeaveBalances = (): LeaveBalance[] => getStorageItem('hr_leave_balances', initialLeaveBalances);
 export const saveLeaveBalances = (data: LeaveBalance[]) => setStorageItem('hr_leave_balances', data);
 
+export const getLeaveEntitlements = (): LeaveEntitlementRecord[] => getStorageItem('hr_leave_entitlements', initialLeaveEntitlements);
+export const saveLeaveEntitlements = (data: LeaveEntitlementRecord[]) => setStorageItem('hr_leave_entitlements', data);
+
 export const getAttendanceRecords = (): AttendanceRecord[] => getStorageItem('hr_attendance_records', initialAttendanceRecords);
 export const saveAttendanceRecords = (data: AttendanceRecord[]) => setStorageItem('hr_attendance_records', data);
 
@@ -627,6 +538,63 @@ export const saveAssociationRequests = (data: AssociationRequest[]) => setStorag
 export const getMessageLogs = (): MessageLog[] => getStorageItem('hr_message_logs', initialMessageLogs);
 export const saveMessageLogs = (data: MessageLog[]) => setStorageItem('hr_message_logs', data);
 
+// Leave Configurations Initial Data
+const initialLeavePeriod: LeavePeriodConfig = {
+  startMonth: 'January',
+  startDate: '01',
+  endDate: 'December 31',
+  currentPeriod: '2025-01-01 to 2025-31-12'
+};
+
+const initialLeaveTypeConfigs: LeaveTypeConfig[] = [
+  { id: 'LT001', name: 'CAN - Bereavement' },
+  { id: 'LT002', name: 'CAN - Bereavement' },
+  { id: 'LT003', name: 'CAN - Bereavement' },
+  { id: 'LT004', name: 'CAN - Bereavement' },
+  { id: 'LT005', name: 'CAN - Bereavement' },
+  { id: 'LT006', name: 'CAN - Bereavement' },
+  { id: 'LT007', name: 'CAN - Bereavement' },
+  { id: 'LT008', name: 'CAN - Bereavement' },
+  { id: 'LT009', name: 'CAN - Bereavement' },
+];
+
+const initialWorkWeek: WorkWeekConfig = {
+  monday: 'Full Day',
+  tuesday: 'Full Day',
+  wednesday: 'Full Day',
+  thursday: 'Full Day',
+  friday: 'Full Day',
+  saturday: 'Full Day',
+  sunday: 'Full Day'
+};
+
+const initialHolidays: HolidayRecord[] = [
+  { id: 'HOL001', name: "New Year's Day", date: '2025-01-01', dayType: 'Full Day', repeatsAnnually: true },
+  { id: 'HOL002', name: "St. Patrick's Day (Canada)", date: '2025-01-01', dayType: 'Full Day', repeatsAnnually: true },
+  { id: 'HOL003', name: "St. George's Day (Canada)", date: '2025-01-01', dayType: 'Full Day', repeatsAnnually: true },
+  { id: 'HOL004', name: 'Victoria Day (Canada)', date: '2025-01-01', dayType: 'Full Day', repeatsAnnually: true },
+  { id: 'HOL005', name: 'National Aboriginal Day', date: '2025-01-01', dayType: 'Full Day', repeatsAnnually: true },
+  { id: 'HOL006', name: 'June Day (Canada)', date: '2025-01-01', dayType: 'Full Day', repeatsAnnually: true },
+  { id: 'HOL007', name: 'The National Holiday of Quebec', date: '2025-01-01', dayType: 'Full Day', repeatsAnnually: true },
+  { id: 'HOL008', name: 'Canada Day (Canada)', date: '2025-01-01', dayType: 'Full Day', repeatsAnnually: true },
+  { id: 'HOL009', name: 'Independence Day', date: '2025-01-01', dayType: 'Full Day', repeatsAnnually: true },
+  { id: 'HOL010', name: 'Nunavut Day', date: '2025-01-01', dayType: 'Full Day', repeatsAnnually: true },
+  { id: 'HOL011', name: "Orangeman's Day", date: '2025-01-01', dayType: 'Full Day', repeatsAnnually: true },
+  { id: 'HOL012', name: 'Remembrance Day', date: '2025-01-01', dayType: 'Full Day', repeatsAnnually: true }
+];
+
+export const getLeavePeriodConfig = (): LeavePeriodConfig => getStorageItem('hr_leave_period', initialLeavePeriod);
+export const saveLeavePeriodConfig = (data: LeavePeriodConfig) => setStorageItem('hr_leave_period', data);
+
+export const getLeaveTypeConfigs = (): LeaveTypeConfig[] => getStorageItem('hr_leave_type_configs', initialLeaveTypeConfigs);
+export const saveLeaveTypeConfigs = (data: LeaveTypeConfig[]) => setStorageItem('hr_leave_type_configs', data);
+
+export const getWorkWeekConfig = (): WorkWeekConfig => getStorageItem('hr_work_week', initialWorkWeek);
+export const saveWorkWeekConfig = (data: WorkWeekConfig) => setStorageItem('hr_work_week', data);
+
+export const getHolidays = (): HolidayRecord[] => getStorageItem('hr_holidays', initialHolidays);
+export const saveHolidays = (data: HolidayRecord[]) => setStorageItem('hr_holidays', data);
+
 // Punched-in/out State
 export const getPunchStatus = (): { punchedIn: boolean; time?: string } => 
   getStorageItem('hr_punch_status', { punchedIn: true, time: "Today at 10:43 AM (GMT 6)" });
@@ -634,18 +602,6 @@ export const savePunchStatus = (status: { punchedIn: boolean; time?: string }) =
   setStorageItem('hr_punch_status', status);
 
 // Corporate Branding state
-export interface CorporateBranding {
-  primaryColor: string;
-  primaryHoverColor: string;
-  primaryFontColor: string;
-  secondaryColor: string;
-  secondaryFontColor: string;
-  primaryGradientColor1: string;
-  primaryGradientColor2: string;
-  clientLogo?: string;
-  loginBanner?: string;
-  clientBanner?: string;
-}
 
 export const getBranding = (): CorporateBranding => 
   getStorageItem('hr_branding', {

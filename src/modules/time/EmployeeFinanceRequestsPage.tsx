@@ -3,10 +3,8 @@ import {
   Search, 
   Calendar, 
   SlidersHorizontal, 
-  DollarSign,
   FileText,
-  Briefcase,
-  User
+  Briefcase
 } from 'lucide-react';
 
 interface FinanceRequest {

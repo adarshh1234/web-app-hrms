@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getEvents, 
-  saveEvents,
-  CompanyEvent 
-} from '../../data/mockData';
+import { CompanyEvent } from '../../types';
+import eventService from '../../services/eventService';
+import Loader from '../../components/common/Loader';
+import EmptyState from '../../components/common/EmptyState';
 import { 
   Plus, 
   Search, 
@@ -17,12 +16,16 @@ import {
   Sparkles
 } from 'lucide-react';
 import Modal from '../../components/common/Modal';
+import { useToast } from '../../hooks/useToast';
 
 export const EventsPage: React.FC = () => {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'all' | 'add' | 'calendar' | 'support'>('all');
 
   // Database States
   const [events, setEvents] = useState<CompanyEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Add Event Form States
   const [title, setTitle] = useState('');
@@ -36,62 +39,72 @@ export const EventsPage: React.FC = () => {
   const [venue, setVenue] = useState('');
   const [participants, setParticipants] = useState('Sarah Johnson, Amal Benny');
 
-  useEffect(() => {
-    setEvents(getEvents());
-  }, []);
-
-  const handleCreateEvent = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newEvent: CompanyEvent = {
-      id: `EVT00${events.length + 1}`,
-      title,
-      type,
-      description: desc,
-      startDate: startDate || new Date().toISOString().split('T')[0],
-      endDate: endDate || new Date().toISOString().split('T')[0],
-      startTime,
-      endTime,
-      location,
-      venue: venue || 'Conference Room A',
-      status: 'Upcoming',
-      participants: participants.split(',').map(p => p.trim()),
-      tasks: [
-        { id: 'T1', name: 'Coordinate schedule logistics', assignee: 'Sarah Johnson', dueDate: startDate, status: 'Not Started' }
-      ]
-    };
-
-    const updated = [...events, newEvent];
-    setEvents(updated);
-    saveEvents(updated);
-
-    alert("Company Event created successfully!");
-    // Reset form
-    setTitle('');
-    setDesc('');
-    setStartDate('');
-    setEndDate('');
-    setVenue('');
-    setActiveTab('all');
+  const loadEvents = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await eventService.getEvents();
+      setEvents(data);
+    } catch (err) {
+      setError('Failed to load events.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleToggleTaskStatus = (evtId: string, taskId: string) => {
-    const updated = events.map(evt => {
-      if (evt.id === evtId) {
-        return {
-          ...evt,
-          tasks: evt.tasks.map(t => {
-            if (t.id === taskId) {
-              const nextStatus = t.status === 'Completed' ? 'Not Started' as const : 'Completed' as const;
-              return { ...t, status: nextStatus };
-            }
-            return t;
-          })
-        };
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const handleCreateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await eventService.createEvent({
+        title,
+        type,
+        description: desc,
+        startDate: startDate || new Date().toISOString().split('T')[0],
+        endDate: endDate || new Date().toISOString().split('T')[0],
+        startTime,
+        endTime,
+        location,
+        venue: venue || 'Conference Room A',
+        status: 'Upcoming',
+        participants: participants.split(',').map(p => p.trim()),
+        tasks: [
+          { id: 'T1', name: 'Coordinate schedule logistics', assignee: 'Sarah Johnson', dueDate: startDate, status: 'Not Started' }
+        ]
+      });
+
+      await loadEvents();
+      toast.success("Company Event created successfully!");
+      setTitle('');
+      setDesc('');
+      setStartDate('');
+      setEndDate('');
+      setVenue('');
+      setActiveTab('all');
+    } catch (err) {
+      toast.error("Failed to create event.");
+    }
+  };
+
+  const handleToggleTaskStatus = async (evtId: string, taskId: string) => {
+    const evt = events.find(e => e.id === evtId);
+    if (!evt) return;
+    const updatedTasks = evt.tasks.map(t => {
+      if (t.id === taskId) {
+        const nextStatus = t.status === 'Completed' ? 'Not Started' as const : 'Completed' as const;
+        return { ...t, status: nextStatus };
       }
-      return evt;
+      return t;
     });
-    setEvents(updated);
-    saveEvents(updated);
+    try {
+      await eventService.updateEvent(evtId, { tasks: updatedTasks });
+      await loadEvents();
+    } catch (err) {
+      toast.error("Failed to update task status.");
+    }
   };
 
   return (
@@ -189,8 +202,8 @@ export const EventsPage: React.FC = () => {
             </h3>
             
             <div className="space-y-4">
-              {events.flatMap(e => e.tasks.map(t => ({ ...t, eventTitle: e.title, eventId: e.id }))).map((task, idx) => (
-                <div key={idx} className="flex gap-2 text-xs border border-slate-100 rounded-lg p-2.5 hover:bg-slate-50">
+              {events.flatMap(e => e.tasks.map(t => ({ ...t, eventTitle: e.title, eventId: e.id }))).map((task) => (
+                <div key={task.id} className="flex gap-2 text-xs border border-slate-100 rounded-lg p-2.5 hover:bg-slate-50">
                   <input 
                     type="checkbox"
                     checked={task.status === 'Completed'}
@@ -231,7 +244,7 @@ export const EventsPage: React.FC = () => {
                 <label className="text-xs font-semibold text-slate-700 block mb-1">Event Type *</label>
                 <select
                   value={type}
-                  onChange={(e) => setType(e.target.value as any)}
+                  onChange={(e) => setType(e.target.value as CompanyEvent['type'])}
                   className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 text-sm focus:border-[var(--primary-color)] outline-none"
                 >
                   <option>Training Session</option>
@@ -359,7 +372,7 @@ export const EventsPage: React.FC = () => {
                 const dayNum = i + 1;
                 const hasEvent = dayNum === 20 || dayNum === 25;
                 return (
-                  <div key={i} className="bg-white p-3 min-h-[60px] flex flex-col justify-between items-start text-xs border-r border-b border-slate-100 relative">
+                  <div key={`day-${dayNum}`} className="bg-white p-3 min-h-[60px] flex flex-col justify-between items-start text-xs border-r border-b border-slate-100 relative">
                     <span className="font-semibold text-slate-400">{dayNum}</span>
                     {hasEvent && (
                       <span className="absolute bottom-1 right-1 h-2 w-2 rounded-full bg-[var(--primary-color)]"></span>

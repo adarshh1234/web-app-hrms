@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Calendar } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
+import Button from '../../components/common/Button';
 
 export const TimeOffRequestPage: React.FC = () => {
+  const toast = useToast();
   const [leaveType, setLeaveType] = useState('Annual Leave');
   const [fromDate, setFromDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -10,7 +12,11 @@ export const TimeOffRequestPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Time off request submitted successfully!");
+    toast.success('Time off request submitted successfully!');
+    setFromDate('');
+    setEndDate('');
+    setDuration('');
+    setReason('');
   };
 
   return (
@@ -91,12 +97,14 @@ export const TimeOffRequestPage: React.FC = () => {
 
         {/* Submit */}
         <div className="flex justify-end pt-2">
-          <button
+          <Button
             type="submit"
-            className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white font-bold rounded shadow-sm text-xs transition-all"
+            variant="primary"
+            size="md"
+            className="px-6"
           >
             Apply
-          </button>
+          </Button>
         </div>
       </form>
     </div>

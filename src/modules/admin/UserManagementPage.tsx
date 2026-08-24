@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, ChevronDown } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
+import Badge from '../../components/common/Badge';
+import Input from '../../components/common/Input';
+import Button from '../../components/common/Button';
 
 interface UserRecord {
   id: string;
@@ -10,6 +14,7 @@ interface UserRecord {
 }
 
 export const UserManagementPage: React.FC = () => {
+  const toast = useToast();
   const [searchUsername, setSearchUsername] = useState('');
   const [searchRole, setSearchRole] = useState('');
   const [searchEmpName, setSearchEmpName] = useState('');
@@ -43,15 +48,12 @@ export const UserManagementPage: React.FC = () => {
       <div className="bg-white border border-slate-205 rounded-xl p-5 shadow-sm space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold text-slate-705">
           {/* Row 1 */}
-          <div>
-            <label className="block mb-1.5">Username</label>
-            <input 
-              type="text" 
-              value={searchUsername}
-              onChange={(e) => setSearchUsername(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-900 outline-none text-xs font-semibold bg-white"
-            />
-          </div>
+          <Input
+            label="Username"
+            type="text" 
+            value={searchUsername}
+            onChange={(e) => setSearchUsername(e.target.value)}
+          />
 
           <div>
             <label className="block mb-1.5">User Role</label>
@@ -72,25 +74,19 @@ export const UserManagementPage: React.FC = () => {
           </div>
 
           {/* Row 2 */}
-          <div>
-            <label className="block mb-1.5">Employee Name</label>
-            <input 
-              type="text" 
-              value={searchEmpName}
-              onChange={(e) => setSearchEmpName(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-900 outline-none text-xs font-semibold bg-white"
-            />
-          </div>
+          <Input
+            label="Employee Name"
+            type="text" 
+            value={searchEmpName}
+            onChange={(e) => setSearchEmpName(e.target.value)}
+          />
 
-          <div>
-            <label className="block mb-1.5">Status</label>
-            <input 
-              type="text" 
-              value={searchStatus}
-              onChange={(e) => setSearchStatus(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-900 outline-none text-xs font-semibold bg-white"
-            />
-          </div>
+          <Input
+            label="Status"
+            type="text" 
+            value={searchStatus}
+            onChange={(e) => setSearchStatus(e.target.value)}
+          />
         </div>
 
         {/* Buttons */}
@@ -101,12 +97,14 @@ export const UserManagementPage: React.FC = () => {
           >
             Reset
           </button>
-          <button 
-            onClick={() => alert("Searching system users")}
-            className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors"
+          <Button 
+            variant="primary"
+            size="md"
+            className="px-6"
+            onClick={() => toast.info("Searching system users")}
           >
             Search
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -117,7 +115,7 @@ export const UserManagementPage: React.FC = () => {
         <div className="flex justify-between items-center pb-1">
           <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
           <button 
-            onClick={() => alert("Add new system user")}
+            onClick={() => toast.info("Add new system user")}
             className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors cursor-pointer"
           >
             <Plus className="h-3 w-3" />
@@ -144,11 +142,15 @@ export const UserManagementPage: React.FC = () => {
               <span>{r.username}</span>
               <span className="text-slate-500 font-semibold">{r.role}</span>
               <span className="text-slate-500 font-semibold">{r.empName}</span>
-              <span>{r.status}</span>
+              <span>
+                <Badge variant={r.status === 'Enabled' ? 'success' : 'neutral'} size="sm">
+                  {r.status}
+                </Badge>
+              </span>
               
               <div className="flex justify-end gap-2.5">
                 <button 
-                  onClick={() => alert(`Editing user #${r.id}`)}
+                  onClick={() => toast.info(`Editing user #${r.id}`)}
                   className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
                 >
                   <Edit2 className="h-3.5 w-3.5" />

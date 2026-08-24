@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getMessageLogs, 
-  saveMessageLogs,
-  MessageLog 
-} from '../../data/mockData';
+import { MessageLog } from '../../types';
+import messagingService from '../../services/messagingService';
+import Loader from '../../components/common/Loader';
+import EmptyState from '../../components/common/EmptyState';
+import { useToast } from '../../hooks/useToast';
 import { 
   Send, 
   Search, 
@@ -15,10 +15,13 @@ import {
 } from 'lucide-react';
 
 export const MessagingPage: React.FC = () => {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'whatsapp' | 'sms' | 'email' | 'config'>('whatsapp');
   
   // Database States
   const [logs, setLogs] = useState<MessageLog[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Composer States
   const [subject, setSubject] = useState('');
@@ -36,8 +39,21 @@ export const MessagingPage: React.FC = () => {
     { name: 'Sarah Joseph (HR)', dept: 'HR' }
   ];
 
+  const loadMessageLogs = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await messagingService.getMessageLogs();
+      setLogs(data);
+    } catch (err) {
+      setError('Failed to load message logs.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    setLogs(getMessageLogs());
+    loadMessageLogs();
   }, []);
 
   const handleToggleEmployee = (name: string) => {
@@ -48,7 +64,7 @@ export const MessagingPage: React.FC = () => {
     }
   };
 
-  const handleSendMessage = (e: React.FormEvent, isDraft = false) => {
+  const handleSendMessage = async (e: React.FormEvent, isDraft = false) => {
     e.preventDefault();
     if (!messageText.trim()) return;
 
@@ -61,26 +77,24 @@ export const MessagingPage: React.FC = () => {
       recipientsStr = 'All Employees';
     }
 
-    const newLog: MessageLog = {
-      id: `MSG00${logs.length + 1}`,
-      channel: activeTab === 'whatsapp' ? 'WhatsApp' : activeTab === 'sms' ? 'SMS' : 'Email',
-      subject: subject || 'No Subject',
-      recipients: recipientsStr,
-      message: messageText,
-      dateSent: new Date().toLocaleString(),
-      status: isDraft ? 'Draft' : 'Sent',
-      replies: 0
-    };
-
-    const updated = [newLog, ...logs];
-    setLogs(updated);
-    saveMessageLogs(updated);
-
-    alert(isDraft ? "Message saved as draft!" : "Message dispatched successfully!");
-    setSubject('');
-    setMessageText('');
-    setSelectedEmployees([]);
-    setSelectedDept('All');
+    try {
+      await messagingService.createMessageLog({
+        channel: activeTab === 'whatsapp' ? 'WhatsApp' : activeTab === 'sms' ? 'SMS' : 'Email',
+        subject: subject || 'No Subject',
+        recipients: recipientsStr,
+        message: messageText,
+        status: isDraft ? 'Draft' : 'Sent',
+        replies: 0
+      });
+      await loadMessageLogs();
+      toast.success(isDraft ? "Draft saved successfully!" : `Message dispatched successfully via ${activeTab.toUpperCase()}!`);
+      setSubject('');
+      setMessageText('');
+      setSelectedEmployees([]);
+      setSelectedDept('All');
+    } catch (err) {
+      toast.error("Failed to send message.");
+    }
   };
 
   return (
@@ -209,8 +223,8 @@ export const MessagingPage: React.FC = () => {
             <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">Message History</h3>
             
             <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
-              {logs.filter(l => l.channel === (activeTab === 'whatsapp' ? 'WhatsApp' : activeTab === 'sms' ? 'SMS' : 'Email')).map((log, idx) => (
-                <div key={idx} className="p-3 border border-slate-100 rounded-lg text-xs space-y-1.5">
+              {logs.filter(l => l.channel === (activeTab === 'whatsapp' ? 'WhatsApp' : activeTab === 'sms' ? 'SMS' : 'Email')).map((log) => (
+                <div key={log.id} className="p-3 border border-slate-100 rounded-lg text-xs space-y-1.5">
                   <div className="flex justify-between font-bold">
                     <span className="text-slate-800">{log.subject}</span>
                     <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
@@ -241,7 +255,7 @@ export const MessagingPage: React.FC = () => {
               <label className="text-xs font-semibold text-slate-700 block mb-1">SMTP Port</label>
               <input type="text" value="587" className="w-full bg-slate-50 rounded-lg border border-slate-200 px-3 py-2 text-slate-600 text-sm outline-none" readOnly />
             </div>
-            <button onClick={() => alert("Credentials saved!")} className="w-full py-2 bg-[var(--primary-color)] text-white text-xs font-bold rounded-lg shadow-sm hover:bg-[var(--primary-hover)]">
+            <button onClick={() => toast.success("Credentials saved!")} className="w-full py-2 bg-[var(--primary-color)] text-white text-xs font-bold rounded-lg shadow-sm hover:bg-[var(--primary-hover)]">
               Save Config
             </button>
           </div>

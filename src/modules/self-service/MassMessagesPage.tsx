@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, ChevronLeft, ChevronRight, Trash2, Edit2 } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 interface MsgHistoryRow {
   id: string;
@@ -11,6 +12,7 @@ interface MsgHistoryRow {
 }
 
 export const MassMessagesPage: React.FC = () => {
+  const toast = useToast();
   const [searchRecipient, setSearchRecipient] = useState('');
   const [selectedDepts, setSelectedDepts] = useState<string[]>([]);
   const [selectedEmps, setSelectedEmps] = useState<string[]>([]);
@@ -56,7 +58,7 @@ export const MassMessagesPage: React.FC = () => {
 
   const handleSend = () => {
     if (!subject.trim() || !message.trim()) {
-      alert("Please fill in subject and message!");
+      toast.error('Please fill in subject and message!');
       return;
     }
     const newMsg: MsgHistoryRow = {
@@ -70,13 +72,12 @@ export const MassMessagesPage: React.FC = () => {
     setHistory([newMsg, ...history]);
     setSubject('');
     setMessage('');
-    alert("Message broadcasted successfully!");
+    toast.success('Message broadcasted successfully!');
   };
 
   const handleDeleteHistory = (id: string) => {
-    if (confirm("Delete this message log?")) {
-      setHistory(history.filter(h => h.id !== id));
-    }
+    setHistory(history.filter(h => h.id !== id));
+    toast.success('Message log deleted.');
   };
 
   return (
@@ -176,8 +177,8 @@ export const MassMessagesPage: React.FC = () => {
               <div className="flex gap-3">
                 <button 
                   type="button"
-                  onClick={() => alert("Draft saved successfully!")}
-                  className="px-6 py-2 border border-[#0473b8] hover:bg-blue-50/50 text-[#0473b8] font-bold rounded-lg text-xs transition-all bg-white"
+                  onClick={() => toast.success('Draft saved successfully!')}
+                  className="px-6 py-2 border border-[#0473b8] hover:bg-blue-50/50 text-[#0473b8] font-bold rounded-lg text-xs transition-all bg-white cursor-pointer"
                 >
                   Save Draft
                 </button>
@@ -261,7 +262,7 @@ export const MassMessagesPage: React.FC = () => {
                 <div className="flex justify-end items-center gap-4">
                   <span className="text-slate-500 font-semibold">{row.read}</span>
                   <div className="flex gap-2 text-slate-400">
-                    <button onClick={() => alert(`Editing message #${row.id}`)} className="hover:text-blue-600">
+                    <button onClick={() => toast.info(`Editing message #${row.id}`)} className="hover:text-blue-600">
                       <Edit2 className="h-3.5 w-3.5" />
                     </button>
                     <button onClick={() => handleDeleteHistory(row.id)} className="hover:text-rose-600">

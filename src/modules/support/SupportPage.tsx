@@ -40,7 +40,9 @@ export const SupportPage: React.FC = () => {
   const handleEdit = (id: string) => {
     const newStatus = prompt("Enter new status (Approved, Pending, Rejected):");
     if (!newStatus) return;
-    setRequests(requests.map(req => req.id === id ? { ...req, status: newStatus as any } : req));
+    if (newStatus === 'Approved' || newStatus === 'Pending' || newStatus === 'Rejected') {
+      setRequests(requests.map(req => req.id === id ? { ...req, status: newStatus } : req));
+    }
   };
 
   return (

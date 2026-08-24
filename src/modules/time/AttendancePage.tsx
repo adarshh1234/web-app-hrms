@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 export const AttendancePage: React.FC = () => {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'my' | 'punch' | 'employee' | 'config'>('my');
 
   // Input states
@@ -32,15 +34,15 @@ export const AttendancePage: React.FC = () => {
       
       {/* 4 Navigation pills at the top */}
       <div className="flex flex-wrap gap-3">
-        {[
+        {([
           { id: 'my', label: 'My Records' },
           { id: 'punch', label: 'Punch In/Out' },
           { id: 'employee', label: 'Employee Records' },
           { id: 'config', label: 'Configuration' }
-        ].map(pill => (
+        ] as const).map(pill => (
           <button
             key={pill.id}
-            onClick={() => setActiveTab(pill.id as any)}
+            onClick={() => setActiveTab(pill.id)}
             className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${
               activeTab === pill.id 
                 ? 'bg-blue-50 text-[#0473b8] font-extrabold border border-blue-200 shadow-sm'
@@ -73,7 +75,7 @@ export const AttendancePage: React.FC = () => {
 
             <div className="flex justify-end">
               <button 
-                onClick={() => alert(`Viewing records for date: ${myRecordsDate}`)}
+                onClick={() => toast.info(`Viewing records for date: ${myRecordsDate}`)}
                 className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
               >
                 View
@@ -162,7 +164,7 @@ export const AttendancePage: React.FC = () => {
 
             <div className="flex justify-end">
               <button 
-                onClick={() => alert(`Punched successfully on ${punchDate} at ${punchTime}`)}
+                onClick={() => toast.success(`Punched successfully on ${punchDate} at ${punchTime}`)}
                 className="px-8 py-2.5 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
               >
                 In
@@ -208,7 +210,7 @@ export const AttendancePage: React.FC = () => {
 
             <div className="flex justify-end">
               <button 
-                onClick={() => alert(`Viewing records for employee: ${empSearchName} on date: ${empSearchDate}`)}
+                onClick={() => toast.info(`Viewing records for employee: ${empSearchName} on date: ${empSearchDate}`)}
                 className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
               >
                 View
@@ -233,7 +235,7 @@ export const AttendancePage: React.FC = () => {
             <div className="space-y-1 max-h-[500px] overflow-y-auto">
               {employeeRecordsRows.map((row, idx) => (
                 <div 
-                  key={idx}
+                  key={row.id || `${row.name}-${idx}`}
                   className="grid grid-cols-3 items-center bg-white border border-slate-200 rounded-lg py-2 px-4 shadow-sm text-xs font-bold text-slate-800"
                 >
                   <span>{row.name}</span>
@@ -241,7 +243,7 @@ export const AttendancePage: React.FC = () => {
                   
                   <div className="flex justify-end">
                     <button 
-                      onClick={() => alert(`Viewing records details for row #${idx}`)}
+                      onClick={() => toast.info(`Viewing records details for row #${idx}`)}
                       className="px-4 py-1 bg-slate-100 hover:bg-slate-200 text-slate-500 text-[10px] font-bold rounded transition-colors cursor-pointer border border-slate-200"
                     >
                       View
@@ -338,7 +340,7 @@ export const AttendancePage: React.FC = () => {
 
             <div className="flex justify-end pt-4">
               <button 
-                onClick={() => alert("Configurations saved successfully!")}
+                onClick={() => toast.success("Configurations saved successfully!")}
                 className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
               >
                 Save

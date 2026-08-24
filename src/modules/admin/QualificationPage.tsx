@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, ChevronDown, Network } from 'lucide-react';
+import { Plus, Edit2, Trash2, ChevronDown } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
+import Input from '../../components/common/Input';
+import Button from '../../components/common/Button';
 
 export const QualificationPage: React.FC = () => {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'info' | 'locations' | 'structure'>('info');
 
   // Tab 1 state
@@ -34,14 +38,14 @@ export const QualificationPage: React.FC = () => {
       
       {/* 3 Tab pills at the top */}
       <div className="flex gap-3">
-        {[
+        {([
           { id: 'info', label: 'General Information' },
           { id: 'locations', label: 'Locations' },
           { id: 'structure', label: 'Structure' }
-        ].map(pill => (
+        ] as const).map(pill => (
           <button
             key={pill.id}
-            onClick={() => setActiveTab(pill.id as any)}
+            onClick={() => setActiveTab(pill.id)}
             className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${
               activeTab === pill.id 
                 ? 'bg-blue-50 text-[#0473b8] font-extrabold border border-blue-200 shadow-sm'
@@ -81,36 +85,27 @@ export const QualificationPage: React.FC = () => {
               <div className="lg:col-span-9 space-y-4">
                 
                 {/* Org Name */}
-                <div>
-                  <label className="block mb-1.5 text-slate-705">Organization Name</label>
-                  <input 
-                    type="text" 
-                    defaultValue="HUREMASO"
-                    disabled={!editEnabled}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none font-semibold text-xs disabled:opacity-80"
-                  />
-                </div>
+                <Input
+                  label="Organization Name"
+                  type="text" 
+                  defaultValue="HUREMASO"
+                  disabled={!editEnabled}
+                />
 
                 {/* Reg Number & Tax ID */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block mb-1.5 text-slate-705">Registration Number</label>
-                    <input 
-                      type="text" 
-                      defaultValue="TX-90823812C"
-                      disabled={!editEnabled}
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none font-semibold text-xs disabled:opacity-80"
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-1.5 text-slate-705">Tax ID</label>
-                    <input 
-                      type="text" 
-                      defaultValue="TAX-90823"
-                      disabled={!editEnabled}
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none font-semibold text-xs disabled:opacity-80"
-                    />
-                  </div>
+                  <Input
+                    label="Registration Number"
+                    type="text" 
+                    defaultValue="TX-90823812C"
+                    disabled={!editEnabled}
+                  />
+                  <Input
+                    label="Tax ID"
+                    type="text" 
+                    defaultValue="TAX-90823"
+                    disabled={!editEnabled}
+                  />
                 </div>
 
               </div>
@@ -127,95 +122,68 @@ export const QualificationPage: React.FC = () => {
 
             {/* Row 3: Contact */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-bold text-slate-700">
-              <div>
-                <label className="block mb-1.5 text-slate-750">Phone</label>
-                <input 
-                  type="text" 
-                  defaultValue="91-484-259110"
-                  disabled={!editEnabled}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 outline-none font-semibold text-xs"
-                />
-              </div>
-              <div>
-                <label className="block mb-1.5 text-slate-750">Fax</label>
-                <input 
-                  type="text" 
-                  defaultValue="91-484-259111"
-                  disabled={!editEnabled}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 outline-none font-semibold text-xs"
-                />
-              </div>
-              <div>
-                <label className="block mb-1.5 text-slate-750">Email</label>
-                <input 
-                  type="email" 
-                  defaultValue="info@huremaso.com"
-                  disabled={!editEnabled}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 outline-none font-semibold text-xs"
-                />
-              </div>
+              <Input
+                label="Phone"
+                type="text" 
+                defaultValue="91-484-259110"
+                disabled={!editEnabled}
+              />
+              <Input
+                label="Fax"
+                type="text" 
+                defaultValue="91-484-259111"
+                disabled={!editEnabled}
+              />
+              <Input
+                label="Email"
+                type="email" 
+                defaultValue="info@huremaso.com"
+                disabled={!editEnabled}
+              />
             </div>
 
             {/* Row 4: Address */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-bold text-slate-700">
-              <div>
-                <label className="block mb-1.5 text-slate-750">Address Street 1</label>
-                <input 
-                  type="text" 
-                  defaultValue="324 Kochi Development Zone"
-                  disabled={!editEnabled}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 outline-none font-semibold text-xs"
-                />
-              </div>
-              <div>
-                <label className="block mb-1.5 text-slate-750">Address Street 2</label>
-                <input 
-                  type="text" 
-                  defaultValue="Infopark Campus"
-                  disabled={!editEnabled}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 outline-none font-semibold text-xs"
-                />
-              </div>
-              <div>
-                <label className="block mb-1.5 text-slate-750">City</label>
-                <input 
-                  type="text" 
-                  defaultValue="Kochi"
-                  disabled={!editEnabled}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 outline-none font-semibold text-xs"
-                />
-              </div>
+              <Input
+                label="Address Street 1"
+                type="text" 
+                defaultValue="324 Kochi Development Zone"
+                disabled={!editEnabled}
+              />
+              <Input
+                label="Address Street 2"
+                type="text" 
+                defaultValue="Infopark Campus"
+                disabled={!editEnabled}
+              />
+              <Input
+                label="City"
+                type="text" 
+                defaultValue="Kochi"
+                disabled={!editEnabled}
+              />
             </div>
 
             {/* Row 5: Region */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-bold text-slate-700">
-              <div>
-                <label className="block mb-1.5 text-slate-750">State/Province</label>
-                <input 
-                  type="text" 
-                  defaultValue="Kerala"
-                  disabled={!editEnabled}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 outline-none font-semibold text-xs"
-                />
-              </div>
-              <div>
-                <label className="block mb-1.5 text-slate-750">Zip/Postal Code</label>
-                <input 
-                  type="text" 
-                  defaultValue="682030"
-                  disabled={!editEnabled}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 outline-none font-semibold text-xs"
-                />
-              </div>
-              <div>
-                <label className="block mb-1.5 text-slate-750">Country</label>
-                <input 
-                  type="text" 
-                  defaultValue="India"
-                  disabled={!editEnabled}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 outline-none font-semibold text-xs"
-                />
-              </div>
+              <Input
+                label="State/Province"
+                type="text" 
+                defaultValue="Kerala"
+                disabled={!editEnabled}
+              />
+              <Input
+                label="Zip/Postal Code"
+                type="text" 
+                defaultValue="682030"
+                disabled={!editEnabled}
+              />
+              <Input
+                label="Country"
+                type="text" 
+                defaultValue="India"
+                disabled={!editEnabled}
+              />
             </div>
 
             {/* Row 6: Description */}
@@ -241,25 +209,19 @@ export const QualificationPage: React.FC = () => {
           {/* Search Filter Card */}
           <div className="bg-white border border-slate-205 rounded-xl p-5 shadow-sm space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-bold text-slate-705">
-              <div>
-                <label className="block mb-1.5">Name</label>
-                <input 
-                  type="text" 
-                  value={searchLocName}
-                  onChange={(e) => setSearchLocName(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-900 outline-none text-xs font-semibold bg-white"
-                />
-              </div>
+              <Input
+                label="Name"
+                type="text" 
+                value={searchLocName}
+                onChange={(e) => setSearchLocName(e.target.value)}
+              />
 
-              <div>
-                <label className="block mb-1.5">City</label>
-                <input 
-                  type="text" 
-                  value={searchLocCity}
-                  onChange={(e) => setSearchLocCity(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-900 outline-none text-xs font-semibold bg-white"
-                />
-              </div>
+              <Input
+                label="City"
+                type="text" 
+                value={searchLocCity}
+                onChange={(e) => setSearchLocCity(e.target.value)}
+              />
 
               <div>
                 <label className="block mb-1.5">Country</label>
@@ -287,12 +249,14 @@ export const QualificationPage: React.FC = () => {
               >
                 Reset
               </button>
-              <button 
-                onClick={() => alert("Searching locations")}
-                className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors"
+              <Button 
+                variant="primary"
+                size="md"
+                className="px-6"
+                onClick={() => toast.info("Searching locations")}
               >
                 Search
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -303,7 +267,7 @@ export const QualificationPage: React.FC = () => {
             <div className="flex justify-between items-center pb-1">
               <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
               <button 
-                onClick={() => alert("Add new location")}
+                onClick={() => toast.info("Add new location")}
                 className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors cursor-pointer"
               >
                 <Plus className="h-3 w-3" />
@@ -335,7 +299,7 @@ export const QualificationPage: React.FC = () => {
                   <span>{loc.employees}</span>
                   
                   <div className="flex justify-end gap-2.5">
-                    <button onClick={() => alert(`Edit location #${loc.id}`)} className="p-1 text-slate-400 hover:text-blue-600">
+                    <button onClick={() => toast.info(`Edit location #${loc.id}`)} className="p-1 text-slate-400 hover:text-blue-600">
                       <Edit2 className="h-3.5 w-3.5" />
                     </button>
                     <button onClick={() => handleDeleteLocation(loc.id)} className="p-1 text-slate-400 hover:text-rose-600">
@@ -394,8 +358,8 @@ export const QualificationPage: React.FC = () => {
                   'Sales & Marketing',
                   'Client Services',
                   'Human Resources'
-                ].map((dept, index) => (
-                  <div key={index} className="relative h-12 flex items-center pl-16">
+                ].map((dept) => (
+                  <div key={dept} className="relative h-12 flex items-center pl-16">
                     {/* Connecting horizontal line from vertical line to the box */}
                     <span className="absolute left-[24px] w-10 h-[2px] bg-[#0473b8]"></span>
                     {/* Dot on the horizontal line, touching the left side of the box */}

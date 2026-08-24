@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 interface CustomerRecord {
   id: string;
@@ -9,6 +10,7 @@ interface CustomerRecord {
 }
 
 export const ProjectInfoPage: React.FC = () => {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'customers' | 'project'>('customers');
 
   // Project tab search states
@@ -48,7 +50,7 @@ export const ProjectInfoPage: React.FC = () => {
           <div className="flex justify-between items-center pb-1">
             <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
             <button 
-              onClick={() => alert("Add customer")}
+              onClick={() => toast.info("Add customer")}
               className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors cursor-pointer"
             >
               <Plus className="h-3 w-3" />
@@ -70,9 +72,9 @@ export const ProjectInfoPage: React.FC = () => {
               { name: 'Apache Software Foundation', desc: 'Leading apparel manufacturing chain.' },
               { name: 'FreeWave Technologies, Inc.', desc: 'Leading apparel manufacturing chain.' },
               { name: 'Fresh Books Software Ltd', desc: 'Leading apparel manufacturing chain.' }
-            ].map((c, idx) => (
+            ].map((c) => (
               <div 
-                key={idx}
+                key={c.name}
                 className="grid grid-cols-12 items-center bg-white border border-slate-200 rounded-lg py-3 px-4 shadow-sm text-xs font-bold text-slate-800"
               >
                 <span className="col-span-4 text-slate-900 font-extrabold">{c.name}</span>
@@ -80,13 +82,13 @@ export const ProjectInfoPage: React.FC = () => {
                 
                 <div className="col-span-2 flex justify-end gap-2 text-slate-400 select-none">
                   <button 
-                    onClick={() => alert(`Deleting customer ${c.name}`)}
+                    onClick={() => toast.info(`Deleting customer ${c.name}`)}
                     className="w-7 h-7 rounded-full bg-[#d0d3d7] hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-all cursor-pointer"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                   <button 
-                    onClick={() => alert(`Editing customer ${c.name}`)}
+                    onClick={() => toast.info(`Editing customer ${c.name}`)}
                     className="w-7 h-7 rounded-full bg-[#d0d3d7] hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-all cursor-pointer"
                   >
                     <Edit2 className="h-3.5 w-3.5" />
@@ -149,7 +151,7 @@ export const ProjectInfoPage: React.FC = () => {
               Reset
             </button>
             <button 
-              onClick={() => alert("Searching records")}
+              onClick={() => toast.info("Searching records")}
               className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors"
             >
               Search
@@ -157,14 +159,14 @@ export const ProjectInfoPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Table list block */}
+        {/* Card table view */}
         <div className="bg-slate-100 border border-slate-200 rounded-xl p-5 space-y-3">
           
           {/* Header info bar with Add Button */}
           <div className="flex justify-between items-center pb-1">
             <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
             <button 
-              onClick={() => alert("Add new record")}
+              onClick={() => toast.info("Add new record")}
               className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors cursor-pointer"
             >
               <Plus className="h-3 w-3" />
@@ -193,7 +195,7 @@ export const ProjectInfoPage: React.FC = () => {
                 
                 <div className="flex justify-end gap-2.5">
                   <button 
-                    onClick={() => alert(`Editing record #${c.id}`)}
+                    onClick={() => toast.info(`Editing record #${c.id}`)}
                     className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
                   >
                     <Edit2 className="h-3.5 w-3.5" />

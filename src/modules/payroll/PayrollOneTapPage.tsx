@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
+import Modal from '../../components/common/Modal';
 
 interface PayrollRow {
   id: string;
@@ -10,6 +12,7 @@ interface PayrollRow {
 }
 
 export const PayrollOneTapPage: React.FC = () => {
+  const toast = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRow, setSelectedRow] = useState<string | null>(null);
   const [payAmount, setPayAmount] = useState('$00.00');
@@ -19,10 +22,6 @@ export const PayrollOneTapPage: React.FC = () => {
     { id: '2', name: 'Sarah Johnson', dept: 'Marketing', date: 'July 20, 2025', status: 'Pending' },
     { id: '3', name: 'Sarah Johnson', dept: 'Marketing', date: 'July 20, 2025', status: 'Pending' },
     { id: '4', name: 'Sarah Johnson', dept: 'Marketing', date: 'July 20, 2025', status: 'Payed' },
-    { id: '5', name: 'Sarah Johnson', dept: 'Marketing', date: 'July 20, 2025', status: 'Payed' },
-    { id: '6', name: 'Sarah Johnson', dept: 'Marketing', date: 'July 20, 2025', status: 'Pending' },
-    { id: '7', name: 'Sarah Johnson', dept: 'Marketing', date: 'July 20, 2025', status: 'Payed' },
-    { id: '8', name: 'Sarah Johnson', dept: 'Marketing', date: 'July 20, 2025', status: 'Pending' },
   ]);
 
   const handlePayClick = (id: string) => {
@@ -34,19 +33,16 @@ export const PayrollOneTapPage: React.FC = () => {
     if (!selectedRow) return;
     setRows(prev => prev.map(r => r.id === selectedRow ? { ...r, status: 'Payed' } : r));
     setSelectedRow(null);
-    alert("Payment processed successfully!");
+    toast.success('Payment processed successfully!');
   };
 
   return (
     <div className="space-y-6">
-      {/* Title */}
       <div>
         <h1 className="text-xl font-bold text-slate-900 m-0">Payroll in One Tap</h1>
       </div>
 
-      {/* Grid List Table */}
       <div className="space-y-3">
-        {/* Header row */}
         <div className="grid grid-cols-5 px-4 py-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
           <span className="col-span-2">Employee Name</span>
           <span>Department</span>
@@ -54,7 +50,6 @@ export const PayrollOneTapPage: React.FC = () => {
           <span className="text-right">Status</span>
         </div>
 
-        {/* Rows */}
         <div className="space-y-2">
           {rows.map((row) => (
             <div 
@@ -88,7 +83,6 @@ export const PayrollOneTapPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Pagination */}
       <div className="flex justify-end items-center gap-2 pt-4">
         <button className="p-1.5 border border-slate-200 rounded-md hover:bg-slate-50 text-slate-500">
           <ChevronLeft className="h-4 w-4" />
@@ -111,37 +105,33 @@ export const PayrollOneTapPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Pay Modal matching Image 4 exactly */}
-      {selectedRow && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xl w-full max-w-lg space-y-6">
-            <h3 className="text-sm font-bold text-slate-900">Enter Amount</h3>
-            
-            <input 
-              type="text" 
-              value={payAmount}
-              onChange={(e) => setPayAmount(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg p-3 text-slate-800 font-mono text-sm outline-none focus:border-blue-500"
-            />
+      <Modal isOpen={!!selectedRow} onClose={() => setSelectedRow(null)} title="Enter Amount">
+        <div className="space-y-4">
+          <input 
+            type="text" 
+            value={payAmount}
+            onChange={(e) => setPayAmount(e.target.value)}
+            className="w-full border border-slate-200 rounded-lg p-3 text-slate-800 font-mono text-sm outline-none focus:border-blue-500"
+          />
 
-            <div className="flex justify-end gap-3 pt-3">
-              <button 
-                onClick={() => setSelectedRow(null)}
-                className="px-5 py-2 border border-[#0473b8] text-[#0473b8] font-bold rounded-lg hover:bg-blue-50/50 text-xs transition-all bg-white"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleConfirmPay}
-                className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white font-bold rounded-lg shadow-sm text-xs"
-              >
-                Pay
-              </button>
-            </div>
+          <div className="flex justify-end gap-3 pt-3">
+            <button 
+              onClick={() => setSelectedRow(null)}
+              className="px-5 py-2 border border-[#0473b8] text-[#0473b8] font-bold rounded-lg hover:bg-blue-50/50 text-xs transition-all bg-white cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handleConfirmPay}
+              className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white font-bold rounded-lg shadow-sm text-xs cursor-pointer"
+            >
+              Pay
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 };
+
 export default PayrollOneTapPage;

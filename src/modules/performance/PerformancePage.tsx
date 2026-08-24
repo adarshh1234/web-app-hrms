@@ -7,8 +7,10 @@ import {
   SlidersHorizontal,
   ClipboardList
 } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 export const PerformancePage: React.FC = () => {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'manage' | 'my' | 'employee' | 'my-tracker' | 'employee-tracker'>('manage');
 
   // Search filter states for Manage Reviews
@@ -34,16 +36,16 @@ export const PerformancePage: React.FC = () => {
     <div className="space-y-6">
       {/* 5 Pill Navigation Tabs at the top */}
       <div className="flex flex-wrap gap-2.5 items-center border-b border-slate-100 pb-3">
-        {[
+        {([
           { id: 'manage', label: 'Manage Reviews' },
           { id: 'my', label: 'My Review' },
           { id: 'employee', label: 'Employee Review' },
           { id: 'my-tracker', label: 'My Tracker' },
           { id: 'employee-tracker', label: 'Employee Tracker' }
-        ].map(tab => (
+        ] as const).map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${
               activeTab === tab.id 
                 ? 'bg-blue-50 text-[#0473b8] border-blue-200 shadow-sm font-extrabold'
@@ -182,7 +184,7 @@ export const PerformancePage: React.FC = () => {
                 Reset
               </button>
               <button 
-                onClick={() => alert("Searching reviews")}
+                onClick={() => toast.info("Searching reviews")}
                 className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white font-bold rounded-lg shadow-sm text-xs"
               >
                 Search
@@ -261,7 +263,7 @@ export const PerformancePage: React.FC = () => {
               <span className="text-slate-500 font-semibold">2022-31-12</span>
               <div className="flex justify-end">
                 <button 
-                  onClick={() => alert("Viewing tracker logs")}
+                  onClick={() => toast.info("Viewing tracker logs")}
                   className="text-blue-600 font-extrabold hover:underline"
                 >
                   View

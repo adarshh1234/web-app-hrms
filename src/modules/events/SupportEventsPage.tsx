@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, User } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 interface SupportEvent {
   id: string;
@@ -11,6 +12,7 @@ interface SupportEvent {
 }
 
 export const SupportEventsPage: React.FC = () => {
+  const toast = useToast();
   const [activeCard, setActiveCard] = useState<string>('4'); // Highlight card #4 by default matching image
 
   const events: SupportEvent[] = [
@@ -60,7 +62,7 @@ export const SupportEventsPage: React.FC = () => {
                 <button 
                   onClick={(event) => {
                     event.stopPropagation();
-                    alert("Ticket set to Open status");
+                    toast.info("Ticket set to Open status");
                   }}
                   className="px-5 py-1.5 bg-[#a3d2ee]/60 hover:bg-[#a3d2ee] text-slate-750 text-xs font-bold rounded-lg cursor-pointer transition-colors"
                 >
@@ -69,7 +71,7 @@ export const SupportEventsPage: React.FC = () => {
                 <button 
                   onClick={(event) => {
                     event.stopPropagation();
-                    alert("Opening replay dialog");
+                    toast.info("Opening replay dialog");
                   }}
                   className="px-5 py-1.5 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg cursor-pointer transition-colors"
                 >

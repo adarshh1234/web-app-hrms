@@ -24,21 +24,36 @@ import {
   Check,
   User
 } from 'lucide-react';
-import { getPunchStatus, getEmployees, savePunchStatus, Employee } from '../../data/mockData';
+import { Employee } from '../../types';
+import timeService from '../../services/timeService';
+import employeeService from '../../services/employeeService';
+import Loader from '../../components/common/Loader';
+import EmptyState from '../../components/common/EmptyState';
+import Badge from '../../components/common/Badge';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [punch, setPunch] = useState({ punchedIn: true, time: "Today at 10:43 AM (GMT 6)" });
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const syncPunchStatus = () => {
-    const status = getPunchStatus();
+  const syncPunchStatus = async () => {
+    const status = await timeService.getPunchStatus();
     setPunch({ punchedIn: status.punchedIn, time: status.time || "" });
   };
 
   useEffect(() => {
-    syncPunchStatus();
-    setEmployees(getEmployees());
+    const initData = async () => {
+      setIsLoading(true);
+      try {
+        await syncPunchStatus();
+        const emps = await employeeService.getAll();
+        setEmployees(emps);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    initData();
 
     window.addEventListener('punch-status-changed', syncPunchStatus);
     return () => {
@@ -46,12 +61,12 @@ export const DashboardPage: React.FC = () => {
     };
   }, []);
 
-  const handlePunchToggle = () => {
+  const handlePunchToggle = async () => {
     const newStatus = !punch.punchedIn;
     const now = new Date();
     const timeStr = `Today at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (GMT 6)`;
     const newPunch = { punchedIn: newStatus, time: timeStr };
-    savePunchStatus(newPunch);
+    await timeService.savePunchStatus(newPunch);
     setPunch(newPunch);
     window.dispatchEvent(new Event('punch-status-changed'));
   };
@@ -124,7 +139,7 @@ export const DashboardPage: React.FC = () => {
 
           <div className="flex justify-between items-end h-20 gap-3 w-full px-2">
             {[0, 14, 18, 12, 16, 0, 0].map((val, idx) => (
-              <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end">
+              <div key={`day-bar-${idx}`} className="flex-1 flex flex-col items-center h-full justify-end">
                 {/* Outer white column */}
                 <div className="w-6 h-20 bg-white border border-slate-200 rounded-lg relative overflow-hidden flex flex-col justify-end">
                   {val > 0 && (
@@ -266,8 +281,8 @@ export const DashboardPage: React.FC = () => {
             <h3 className="text-xs font-bold text-slate-900">Employees on Leave Today</h3>
           </div>
           <div className="divide-y divide-slate-100 flex-1 max-h-[170px] overflow-y-auto">
-            {leaveEmployees.map((emp, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3.5 hover:bg-slate-50 transition-colors">
+            {leaveEmployees.map((emp) => (
+              <div key={emp.id} className="flex items-center justify-between p-3.5 hover:bg-slate-50 transition-colors">
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-full bg-slate-150 border border-slate-200 overflow-hidden flex items-center justify-center font-bold text-[10px] text-slate-700">
                     <img 
@@ -281,9 +296,9 @@ export const DashboardPage: React.FC = () => {
                     <p className="text-[9px] text-slate-400 font-bold mt-1">Emp ID: {emp.id.replace('EMP', '')} · {emp.subUnit}</p>
                   </div>
                 </div>
-                <span className="bg-slate-100 text-slate-600 text-[9px] font-extrabold px-2.5 py-0.5 rounded border border-slate-200">
+                <Badge variant="neutral" size="sm">
                   CAN - Personal
-                </span>
+                </Badge>
               </div>
             ))}
           </div>

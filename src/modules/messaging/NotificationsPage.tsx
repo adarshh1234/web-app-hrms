@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
+import Badge from '../../components/common/Badge';
 
 interface HistoryItem {
   id: string;
@@ -12,6 +14,7 @@ interface HistoryItem {
 }
 
 export const NotificationsPage: React.FC = () => {
+  const toast = useToast();
   const location = useLocation();
   const path = location.pathname;
 
@@ -68,7 +71,7 @@ export const NotificationsPage: React.FC = () => {
 
   const handleSend = () => {
     if (!message.trim()) {
-      alert("Please enter a message before sending.");
+      toast.error("Please enter a message before sending.");
       return;
     }
     const newItem: HistoryItem = {
@@ -84,12 +87,12 @@ export const NotificationsPage: React.FC = () => {
     setMessage('');
     setSelectedEmps({});
     setSelectedDepts({});
-    alert("Message sent successfully!");
+    toast.success("Message sent successfully!");
   };
 
   const handleSaveDraft = () => {
     if (!message.trim() && !subject.trim()) {
-      alert("Please enter a subject or message to save as draft.");
+      toast.error("Please enter a subject or message to save as draft.");
       return;
     }
     const newItem: HistoryItem = {
@@ -105,7 +108,7 @@ export const NotificationsPage: React.FC = () => {
     setMessage('');
     setSelectedEmps({});
     setSelectedDepts({});
-    alert("Draft saved successfully!");
+    toast.info("Draft saved successfully!");
   };
 
   // Filter history items
@@ -304,13 +307,9 @@ export const NotificationsPage: React.FC = () => {
                   <span className="text-slate-500 font-semibold">{item.recipients}</span>
                   
                   <div>
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded border ${
-                      item.status === 'Send' 
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
-                        : 'bg-slate-50 text-slate-700 border-slate-100'
-                    }`}>
+                    <Badge variant={item.status === 'Send' ? 'success' : 'neutral'} size="sm">
                       {item.status}
-                    </span>
+                    </Badge>
                   </div>
 
                   <span className="text-right text-slate-500 font-semibold">{item.read}</span>

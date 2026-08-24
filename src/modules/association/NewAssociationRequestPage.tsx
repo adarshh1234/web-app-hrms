@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
+import Button from '../../components/common/Button';
 
 interface AssociationRequest {
   id: string;
@@ -9,6 +11,7 @@ interface AssociationRequest {
 }
 
 export const NewAssociationRequestPage: React.FC = () => {
+  const toast = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [requests, setRequests] = useState<AssociationRequest[]>([
     { id: '1', name: 'Sarah Joseph', date: 'July 20, 2025', text: 'Requesting association with the Marketing Department for project collaboration and resource sharing. Looking forward to joining the team and contributing to upcoming campaigns.' },
@@ -18,12 +21,12 @@ export const NewAssociationRequestPage: React.FC = () => {
   ]);
 
   const handleAccept = (id: string) => {
-    alert(`Accepted association request from Sarah Joseph (Request #${id})`);
+    toast.success(`Accepted association request from Sarah Joseph (Request #${id})`);
     setRequests(requests.filter(r => r.id !== id));
   };
 
   const handleCancel = (id: string) => {
-    alert(`Cancelled/Rejected association request from Sarah Joseph (Request #${id})`);
+    toast.info(`Cancelled/Rejected association request from Sarah Joseph (Request #${id})`);
     setRequests(requests.filter(r => r.id !== id));
   };
 
@@ -63,12 +66,14 @@ export const NewAssociationRequestPage: React.FC = () => {
 
             {/* Action buttons matching design exactly */}
             <div className="flex gap-3">
-              <button 
+              <Button 
+                variant="primary"
+                size="md"
+                className="px-6"
                 onClick={() => handleAccept(req.id)}
-                className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer transition-colors"
               >
                 Accept
-              </button>
+              </Button>
               <button 
                 onClick={() => handleCancel(req.id)}
                 className="px-6 py-2 border border-[#0473b8] hover:bg-blue-50/50 text-[#0473b8] text-xs font-bold rounded-lg cursor-pointer transition-all bg-white"

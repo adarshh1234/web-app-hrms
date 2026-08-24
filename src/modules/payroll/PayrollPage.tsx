@@ -1,35 +1,47 @@
 import React, { useState, useEffect } from 'react';
+import { FinanceRequest } from '../../types';
+import payrollService from '../../services/payrollService';
+import Loader from '../../components/common/Loader';
+import EmptyState from '../../components/common/EmptyState';
+import Badge from '../../components/common/Badge';
 import { 
-  getFinanceRequests, 
-  saveFinanceRequests,
-  FinanceRequest 
-} from '../../data/mockData';
-import { 
-  DollarSign, 
-  Check, 
-  X, 
   HeartPulse, 
   Award, 
   Car,
-  Search
+  Check,
+  X
 } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 export const PayrollPage: React.FC = () => {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'payroll-tap' | 'benefit-advance' | 'finance-requests'>('payroll-tap');
-
-  // Database States
   const [financeRequests, setFinanceRequests] = useState<FinanceRequest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Payroll Tap Mock list
   const [payrollEmployees, setPayrollEmployees] = useState([
     { id: '1', name: 'Sarah Johnson', dept: 'Marketing', date: 'July 20, 2025', status: 'Pending' },
-    { id: '2', name: 'Michael Chen', dept: 'Engineering', date: 'July 20, 2025', status: 'Payed' }, // Figma typo "Payed"
+    { id: '2', name: 'Michael Chen', dept: 'Engineering', date: 'July 20, 2025', status: 'Payed' },
     { id: '3', name: 'James Wilson', dept: 'Sales', date: 'July 20, 2025', status: 'Pending' },
     { id: '4', name: 'Lisa Anderson', dept: 'Marketing', date: 'July 20, 2025', status: 'Payed' }
   ]);
 
+  const loadFinanceRequests = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await payrollService.getFinanceRequests();
+      setFinanceRequests(data);
+    } catch (err) {
+      setError('Failed to load finance requests.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    setFinanceRequests(getFinanceRequests());
+    loadFinanceRequests();
   }, []);
 
   const handlePaySubmit = (id: string) => {
@@ -39,49 +51,43 @@ export const PayrollPage: React.FC = () => {
       }
       return emp;
     }));
-    alert("Payment processed successfully!");
+    toast.success('Payment processed successfully!');
   };
 
-  const handleFinanceApprove = (id: string) => {
-    const updated = financeRequests.map(req => {
-      if (req.id === id) {
-        return { ...req, status: 'Approved' as const };
-      }
-      return req;
-    });
-    setFinanceRequests(updated);
-    saveFinanceRequests(updated);
-    alert("Finance request approved!");
+  const handleFinanceApprove = async (id: string) => {
+    try {
+      await payrollService.updateFinanceRequestStatus(id, 'Approved');
+      await loadFinanceRequests();
+      toast.success('Finance request approved!');
+    } catch (err) {
+      toast.error('Failed to approve request.');
+    }
   };
 
-  const handleFinanceReject = (id: string) => {
-    const updated = financeRequests.map(req => {
-      if (req.id === id) {
-        return { ...req, status: 'Rejected' as const };
-      }
-      return req;
-    });
-    setFinanceRequests(updated);
-    saveFinanceRequests(updated);
-    alert("Finance request rejected!");
+  const handleFinanceReject = async (id: string) => {
+    try {
+      await payrollService.updateFinanceRequestStatus(id, 'Rejected');
+      await loadFinanceRequests();
+      toast.error('Finance request rejected!');
+    } catch (err) {
+      toast.error('Failed to reject request.');
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Title */}
       <div className="flex flex-col gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 m-0">Payroll Hub</h1>
           <p className="text-sm text-slate-500 mt-1">Disburse salaries in one tap, manage benefit advances, and approve financial requests.</p>
         </div>
 
-        {/* Tab Links */}
         <div className="flex flex-wrap border-b border-slate-200">
           {(['payroll-tap', 'benefit-advance', 'finance-requests'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2.5 text-xs font-bold border-b-2 uppercase tracking-wider transition-all -mb-[2px] ${
+              className={`px-4 py-2.5 text-xs font-bold border-b-2 uppercase tracking-wider transition-all -mb-[2px] cursor-pointer ${
                 activeTab === tab 
                   ? 'border-[var(--primary-color)] text-[var(--primary-color)] font-extrabold'
                   : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
@@ -93,7 +99,6 @@ export const PayrollPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Tab Contents */}
       {activeTab === 'payroll-tap' && (
         <div className="space-y-4 animate-fade-in">
           <div className="flex justify-between items-center">
@@ -101,15 +106,16 @@ export const PayrollPage: React.FC = () => {
             <button 
               onClick={() => {
                 setPayrollEmployees(payrollEmployees.map(e => ({ ...e, status: 'Payed' })));
-                alert("All salaries processed successfully in one tap!");
+                toast.success('All salaries processed successfully in one tap!');
               }}
-              className="px-4 py-2 bg-[var(--primary-color)] hover:bg-[var(--primary-hover)] text-white text-xs font-bold rounded-lg shadow-sm"
+              className="px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
             >
               Pay All Employees
             </button>
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-700">
               <thead className="bg-slate-50 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                 <tr>
@@ -139,7 +145,7 @@ export const PayrollPage: React.FC = () => {
                       {emp.status === 'Pending' ? (
                         <button 
                           onClick={() => handlePaySubmit(emp.id)}
-                          className="px-3 py-1 bg-[var(--primary-color)] text-white font-semibold rounded hover:bg-[var(--primary-hover)]"
+                          className="px-3 py-1 bg-[#0473b8] text-white font-semibold rounded hover:bg-[#03629e] cursor-pointer"
                         >
                           Pay
                         </button>
@@ -151,6 +157,7 @@ export const PayrollPage: React.FC = () => {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       )}
@@ -159,8 +166,6 @@ export const PayrollPage: React.FC = () => {
         <div className="space-y-4 animate-fade-in">
           <h3 className="text-base font-bold text-slate-900">Easy Employee Benefit Advance</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Health Card */}
             <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between space-y-4">
               <div className="space-y-2">
                 <div className="h-10 w-10 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center">
@@ -170,14 +175,13 @@ export const PayrollPage: React.FC = () => {
                 <p className="text-xs text-slate-500 leading-relaxed">Free or discounted full-body check-ups provided yearly for preventive health.</p>
               </div>
               <button 
-                onClick={() => alert("Applied for Annual Health Check-ups Benefit!")}
-                className="w-full py-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-xs rounded-lg transition-colors"
+                onClick={() => toast.success('Applied for Annual Health Check-ups Benefit!')}
+                className="w-full py-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-xs rounded-lg transition-colors cursor-pointer"
               >
                 Apply
               </button>
             </div>
 
-            {/* Workshops Card */}
             <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between space-y-4">
               <div className="space-y-2">
                 <div className="h-10 w-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
@@ -187,14 +191,13 @@ export const PayrollPage: React.FC = () => {
                 <p className="text-xs text-slate-500 leading-relaxed">Sponsorship for attending or speaking at industry events to gain exposure and knowledge.</p>
               </div>
               <button 
-                onClick={() => alert("Applied for Workshops & Conferences sponsorship!")}
-                className="w-full py-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-xs rounded-lg transition-colors"
+                onClick={() => toast.success('Applied for Workshops & Conferences sponsorship!')}
+                className="w-full py-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-xs rounded-lg transition-colors cursor-pointer"
               >
                 Apply
               </button>
             </div>
 
-            {/* Cab Card */}
             <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between space-y-4">
               <div className="space-y-2">
                 <div className="h-10 w-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center">
@@ -204,13 +207,12 @@ export const PayrollPage: React.FC = () => {
                 <p className="text-xs text-slate-500 leading-relaxed">Free or subsidized transportation for commuting to and from the workplace.</p>
               </div>
               <button 
-                onClick={() => alert("Applied for Cab / Transport facilities!")}
-                className="w-full py-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-xs rounded-lg transition-colors"
+                onClick={() => toast.success('Applied for Cab / Transport facilities!')}
+                className="w-full py-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-xs rounded-lg transition-colors cursor-pointer"
               >
                 Apply
               </button>
             </div>
-
           </div>
         </div>
       )}
@@ -230,6 +232,7 @@ export const PayrollPage: React.FC = () => {
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-700">
               <thead className="bg-slate-50 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                 <tr>
@@ -256,27 +259,23 @@ export const PayrollPage: React.FC = () => {
                       ${req.amount.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-                        req.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                        req.status === 'Rejected' ? 'bg-rose-50 text-rose-700 border-rose-100' :
-                        'bg-amber-50 text-amber-700 border-amber-100'
-                      }`}>
+                      <Badge variant={req.status === 'Approved' ? 'success' : req.status === 'Rejected' ? 'error' : 'warning'} size="sm">
                         {req.status}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold">
                       {req.status === 'Pending' ? (
                         <div className="flex justify-end gap-2">
                           <button 
                             onClick={() => handleFinanceApprove(req.id)}
-                            className="p-1 bg-emerald-50 text-emerald-700 border border-emerald-250 rounded hover:bg-emerald-100"
+                            className="p-1 bg-emerald-50 text-emerald-700 border border-emerald-250 rounded hover:bg-emerald-100 cursor-pointer"
                             title="Approve Request"
                           >
                             <Check className="h-3.5 w-3.5" />
                           </button>
                           <button 
                             onClick={() => handleFinanceReject(req.id)}
-                            className="p-1 bg-rose-50 text-rose-700 border border-rose-250 rounded hover:bg-rose-100"
+                            className="p-1 bg-rose-50 text-rose-700 border border-rose-250 rounded hover:bg-rose-100 cursor-pointer"
                             title="Reject Request"
                           >
                             <X className="h-3.5 w-3.5" />
@@ -290,6 +289,7 @@ export const PayrollPage: React.FC = () => {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       )}

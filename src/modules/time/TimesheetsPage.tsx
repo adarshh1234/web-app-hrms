@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 interface TimesheetAction {
   action: string;
@@ -8,6 +9,7 @@ interface TimesheetAction {
 }
 
 export const TimesheetsPage: React.FC = () => {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'my' | 'employee'>('my');
   const [dateRange, setDateRange] = useState('2025-07-07 to 2025-13-07');
   const [empSearchName, setEmpSearchName] = useState('');
@@ -104,7 +106,7 @@ export const TimesheetsPage: React.FC = () => {
             <div className="flex justify-between items-center pt-2 border-t border-slate-100 text-xs font-bold">
               <span className="text-slate-550">Status: Submitted</span>
               <button 
-                onClick={() => alert("Editing timesheet hours")}
+                onClick={() => toast.info("Editing timesheet hours")}
                 className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer transition-colors"
               >
                 Edit
@@ -127,9 +129,9 @@ export const TimesheetsPage: React.FC = () => {
               </div>
 
               {/* Rows */}
-              {actions.map((act, idx) => (
+              {actions.map((act) => (
                 <div 
-                  key={idx}
+                  key={`${act.action}-${act.performedBy}`}
                   className="grid grid-cols-4 items-center bg-white border border-slate-200 rounded-lg py-2.5 px-4 shadow-xs text-xs font-bold text-slate-800"
                 >
                   <span>{act.action}</span>
@@ -138,7 +140,7 @@ export const TimesheetsPage: React.FC = () => {
                   
                   <div className="flex justify-end">
                     <button 
-                      onClick={() => alert("Viewing history logs")}
+                      onClick={() => toast.info("Viewing history logs")}
                       className="px-4 py-1 bg-slate-150 hover:bg-slate-200 text-slate-650 text-[10px] font-bold rounded cursor-pointer transition-colors"
                     >
                       View
@@ -173,7 +175,7 @@ export const TimesheetsPage: React.FC = () => {
 
               <div className="flex justify-end">
                 <button 
-                  onClick={() => alert(`Viewing timesheet for ${empSearchName || 'Selected Employee'}`)}
+                  onClick={() => toast.info(`Viewing timesheet for ${empSearchName || 'Selected Employee'}`)}
                   className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
                 >
                   View
@@ -200,9 +202,9 @@ export const TimesheetsPage: React.FC = () => {
 
               {/* Table Rows */}
               <div className="space-y-2">
-                {pendingActions.map((row, idx) => (
+                {pendingActions.map((row) => (
                   <div 
-                    key={idx}
+                    key={`${row.name}-${row.period}`}
                     className="grid grid-cols-3 items-center bg-white border border-slate-200 rounded-lg py-2.5 px-4 shadow-sm text-xs font-bold text-slate-800"
                   >
                     <span>{row.name}</span>
@@ -210,7 +212,7 @@ export const TimesheetsPage: React.FC = () => {
                     
                     <div className="flex justify-end">
                       <button 
-                        onClick={() => alert(`Viewing pending timesheet for ${row.name}`)}
+                        onClick={() => toast.info(`Viewing pending timesheet for ${row.name}`)}
                         className="px-4 py-1.5 bg-[#85bfe2]/70 hover:bg-[#85bfe2] text-slate-750 text-[10px] font-bold rounded transition-colors cursor-pointer"
                       >
                         View

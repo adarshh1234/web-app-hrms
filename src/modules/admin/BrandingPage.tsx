@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useToast } from '../../hooks/useToast';
 
 export const BrandingPage: React.FC = () => {
+  const toast = useToast();
   const [primaryColor, setPrimaryColor] = useState('#e0e0e0');
   const [secondaryColor, setSecondaryColor] = useState('#e0e0e0');
   const [primaryFontColor, setPrimaryFontColor] = useState('#e0e0e0');
@@ -238,13 +240,13 @@ export const BrandingPage: React.FC = () => {
           Reset to Default
         </button>
         <button 
-          onClick={() => alert("Previewing branding changes")}
+          onClick={() => toast.info("Previewing branding changes")}
           className="px-5 py-2.5 border border-[#0473b8] bg-white hover:bg-blue-50/50 text-[#0473b8] text-xs font-bold rounded-lg shadow-sm transition-all"
         >
           Preview
         </button>
         <button 
-          onClick={() => alert("Corporate branding configuration saved and published!")}
+          onClick={() => toast.success("Corporate branding configuration saved and published!")}
           className="px-6 py-2.5 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
         >
           Publish
