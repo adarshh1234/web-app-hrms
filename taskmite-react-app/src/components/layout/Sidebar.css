@@ -1,0 +1,127 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 96px;
+  height: 100%;
+  background: var(--navy);
+  z-index: 900;
+  overflow-y: auto;
+  user-select: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.icon-col {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100%;
+  padding-top: 8px;
+}
+
+.icon-col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.icon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  padding: 12px 6px;
+  color: #c7d1de;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  font-size: 11px;
+  line-height: 1.2;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.icon-item:hover {
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.icon-item.active {
+  background: var(--orange);
+  color: #ffffff;
+}
+
+.icon-item-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.icon-item-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.icon-col-logout {
+  padding-bottom: 16px;
+  margin-top: auto;
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
+/* Responsive styles */
+@media (max-width: 680px) {
+  .sidebar {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    width: 220px;
+    height: calc(100vh - var(--header-height));
+    transform: translateX(-100%);
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 850;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .icon-col {
+    padding-top: 12px;
+  }
+
+  .icon-item {
+    flex-direction: row;
+    gap: 14px;
+    padding: 14px 20px;
+    font-size: 14px;
+    text-align: left;
+    justify-content: flex-start;
+  }
+
+  .icon-item-svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .icon-item-label {
+    font-size: 13.5px;
+  }
+}
