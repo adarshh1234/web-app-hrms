@@ -347,15 +347,15 @@ export const AddEventPage: React.FC = () => {
 
           {/* Form action buttons */}
           <div className="flex justify-end gap-3 pt-2">
-            <button className="px-6 py-2 border border-[#0473b8] hover:bg-blue-50/50 text-[#0473b8] text-xs font-bold rounded-lg transition-all bg-white">
+            <button className="px-6 py-2 border border-[#006666] hover:bg-emerald-50/50 text-[#006666] text-xs font-bold rounded-lg transition-all bg-white cursor-pointer">
               Cancel
             </button>
-            <button className="px-6 py-2 border border-[#0473b8] hover:bg-blue-50/50 text-[#0473b8] text-xs font-bold rounded-lg transition-all bg-white">
+            <button className="px-6 py-2 border border-[#006666] hover:bg-emerald-50/50 text-[#006666] text-xs font-bold rounded-lg transition-all bg-white cursor-pointer">
               Save Draft
             </button>
             <button 
               onClick={handleCreate}
-              className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
+              className="px-6 py-2 bg-[#004848] hover:bg-[#003333] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
             >
               Create Event
             </button>

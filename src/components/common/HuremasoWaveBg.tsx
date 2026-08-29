@@ -12,25 +12,25 @@ export const HuremasoWaveBg: React.FC<HuremasoWaveBgProps> = ({ className = '' }
       preserveAspectRatio="none"
     >
       <defs>
-        {/* Background gradient from top-left white to soft ice blue */}
+        {/* Background gradient from top-left white to soft ice green */}
         <linearGradient id="hmBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="40%" stopColor="#f5f9fe" />
-          <stop offset="100%" stopColor="#dbeefe" />
+          <stop offset="40%" stopColor="#f2f9f9" />
+          <stop offset="100%" stopColor="#e6f3f3" />
         </linearGradient>
 
         {/* Main upper fluid wave gradient */}
         <linearGradient id="hmWaveGrad1" x1="20%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#9ecdfd" stopOpacity="0.85" />
-          <stop offset="60%" stopColor="#67b2f8" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#4399ee" stopOpacity="0.9" />
+          <stop offset="0%" stopColor="#80cbd0" stopOpacity="0.85" />
+          <stop offset="60%" stopColor="#339999" stopOpacity="0.95" />
+          <stop offset="100%" stopColor="#006666" stopOpacity="0.9" />
         </linearGradient>
 
         {/* Soft middle wave layer gradient */}
         <linearGradient id="hmWaveGrad2" x1="0%" y1="50%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#e0f0fe" stopOpacity="0.9" />
-          <stop offset="50%" stopColor="#b4dcfe" stopOpacity="0.85" />
-          <stop offset="100%" stopColor="#7ec0fa" stopOpacity="0.8" />
+          <stop offset="0%" stopColor="#e6f4f4" stopOpacity="0.9" />
+          <stop offset="50%" stopColor="#b3e5e5" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#4db3b3" stopOpacity="0.8" />
         </linearGradient>
       </defs>
 
@@ -46,7 +46,7 @@ export const HuremasoWaveBg: React.FC<HuremasoWaveBgProps> = ({ className = '' }
       {/* Top right subtle accent layer */}
       <path 
         d="M 270,0 C 330,20 420,30 500,120 L 500,0 Z" 
-        fill="#82c2fc" 
+        fill="#4db3b3" 
         opacity="0.5" 
       />
 

@@ -3,12 +3,12 @@ import { useToast } from '../../hooks/useToast';
 
 export const BrandingPage: React.FC = () => {
   const toast = useToast();
-  const [primaryColor, setPrimaryColor] = useState('#e0e0e0');
-  const [secondaryColor, setSecondaryColor] = useState('#e0e0e0');
-  const [primaryFontColor, setPrimaryFontColor] = useState('#e0e0e0');
-  const [secondaryFontColor, setSecondaryFontColor] = useState('#e0e0e0');
-  const [gradient1, setGradient1] = useState('#e0e0e0');
-  const [gradient2, setGradient2] = useState('#e0e0e0');
+  const [primaryColor, setPrimaryColor] = useState('#004848');
+  const [secondaryColor, setSecondaryColor] = useState('#f1f5f9');
+  const [primaryFontColor, setPrimaryFontColor] = useState('#ffffff');
+  const [secondaryFontColor, setSecondaryFontColor] = useState('#1e293b');
+  const [gradient1, setGradient1] = useState('#002222');
+  const [gradient2, setGradient2] = useState('#007878');
 
   // File labels
   const [logoFile, setLogoFile] = useState('No file selected');
@@ -17,12 +17,12 @@ export const BrandingPage: React.FC = () => {
   const [socialMediaToggled, setSocialMediaToggled] = useState(true);
 
   const handleReset = () => {
-    setPrimaryColor('#e0e0e0');
-    setSecondaryColor('#e0e0e0');
-    setPrimaryFontColor('#e0e0e0');
-    setSecondaryFontColor('#e0e0e0');
-    setGradient1('#e0e0e0');
-    setGradient2('#e0e0e0');
+    setPrimaryColor('#004848');
+    setSecondaryColor('#f1f5f9');
+    setPrimaryFontColor('#ffffff');
+    setSecondaryFontColor('#1e293b');
+    setGradient1('#002222');
+    setGradient2('#007878');
     setLogoFile('No file selected');
     setBannerFile('No file selected');
     setLoginBannerFile('No file selected');
@@ -235,19 +235,19 @@ export const BrandingPage: React.FC = () => {
       <div className="flex justify-end gap-3 pt-4">
         <button 
           onClick={handleReset}
-          className="px-5 py-2.5 border border-[#0473b8] bg-white hover:bg-blue-50/50 text-[#0473b8] text-xs font-bold rounded-lg shadow-sm transition-all"
+          className="px-5 py-2.5 border border-[#004848] bg-white hover:bg-emerald-50/50 text-[#006666] text-xs font-bold rounded-lg shadow-sm transition-all"
         >
           Reset to Default
         </button>
         <button 
           onClick={() => toast.info("Previewing branding changes")}
-          className="px-5 py-2.5 border border-[#0473b8] bg-white hover:bg-blue-50/50 text-[#0473b8] text-xs font-bold rounded-lg shadow-sm transition-all"
+          className="px-5 py-2.5 border border-[#004848] bg-white hover:bg-emerald-50/50 text-[#006666] text-xs font-bold rounded-lg shadow-sm transition-all"
         >
           Preview
         </button>
         <button 
           onClick={() => toast.success("Corporate branding configuration saved and published!")}
-          className="px-6 py-2.5 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
+          className="px-6 py-2.5 bg-[#004848] hover:bg-[#003333] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
         >
           Publish
         </button>

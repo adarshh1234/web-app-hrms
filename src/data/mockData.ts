@@ -603,16 +603,21 @@ export const savePunchStatus = (status: { punchedIn: boolean; time?: string }) =
 
 // Corporate Branding state
 
-export const getBranding = (): CorporateBranding => 
-  getStorageItem('hr_branding', {
-    primaryColor: "#0473b8",
-    primaryHoverColor: "#03629e",
-    primaryFontColor: "#ffffff",
-    secondaryColor: "#f1f5f9",
-    secondaryFontColor: "#1e293b",
-    primaryGradientColor1: "#0473b8",
-    primaryGradientColor2: "#0284c7"
-  });
+export const getBranding = (): CorporateBranding => {
+  const item = getStorageItem<CorporateBranding | null>('hr_branding', null);
+  if (!item || item.primaryColor === '#0473b8' || item.primaryColor === '#e0e0e0') {
+    return {
+      primaryColor: "#004848",
+      primaryHoverColor: "#003333",
+      primaryFontColor: "#ffffff",
+      secondaryColor: "#f1f5f9",
+      secondaryFontColor: "#1e293b",
+      primaryGradientColor1: "#002222",
+      primaryGradientColor2: "#007878"
+    };
+  }
+  return item;
+};
 
 export const saveBranding = (branding: CorporateBranding) => {
   setStorageItem('hr_branding', branding);

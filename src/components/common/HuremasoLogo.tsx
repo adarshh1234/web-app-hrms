@@ -21,7 +21,7 @@ export const HuremasoLogo: React.FC<HuremasoLogoProps> = ({ className = '', size
   };
 
   return (
-    <div className={`flex items-center justify-center select-none text-[#4d90cd] font-normal tracking-tight font-sans ${sizeMap[size]} ${className}`}>
+    <div className={`flex items-center justify-center select-none text-[#006666] font-normal tracking-tight font-sans ${sizeMap[size]} ${className}`}>
       <span>HUR</span>
       <span className="relative flex items-center justify-center">
         E

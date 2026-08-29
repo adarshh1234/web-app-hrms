@@ -7,13 +7,13 @@ import { useToast } from '../../../hooks/useToast';
 export const CorporateBrandingTab: React.FC = () => {
   const toast = useToast();
   const [branding, setBranding] = useState<CorporateBranding>({
-    primaryColor: '#0473b8',
-    primaryHoverColor: '#03629e',
+    primaryColor: '#004848',
+    primaryHoverColor: '#003333',
     primaryFontColor: '#ffffff',
     secondaryColor: '#f1f5f9',
     secondaryFontColor: '#1e293b',
-    primaryGradientColor1: '#0473b8',
-    primaryGradientColor2: '#0284c7'
+    primaryGradientColor1: '#002222',
+    primaryGradientColor2: '#007878'
   });
 
   useEffect(() => {
@@ -28,13 +28,13 @@ export const CorporateBrandingTab: React.FC = () => {
 
   const handleResetBranding = () => {
     const defaultBranding = {
-      primaryColor: '#0473b8',
-      primaryHoverColor: '#03629e',
+      primaryColor: '#004848',
+      primaryHoverColor: '#003333',
       primaryFontColor: '#ffffff',
       secondaryColor: '#f1f5f9',
       secondaryFontColor: '#1e293b',
-      primaryGradientColor1: '#0473b8',
-      primaryGradientColor2: '#0284c7'
+      primaryGradientColor1: '#002222',
+      primaryGradientColor2: '#007878'
     };
     setBranding(defaultBranding);
     adminService.updateBranding(defaultBranding);

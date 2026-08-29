@@ -43,7 +43,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ isAuthenticated, onLogout 
           onToggleMobile={() => setIsMobileOpen(prev => !prev)}
           onLogout={onLogout} 
         />
-        <Sidebar isOpen={sidebarOpen} isMobileOpen={isMobileOpen} onClose={closeMobileSidebar} />
+        <Sidebar isOpen={sidebarOpen} isMobileOpen={isMobileOpen} onClose={closeMobileSidebar} onLogout={onLogout} />
         <main className={`transition-all duration-300 pt-16 ${sidebarOpen ? 'pl-0 md:pl-72' : 'pl-0 md:pl-20'}`}>
           <div className="p-4 md:p-6 max-w-7xl mx-auto">
             <Outlet />

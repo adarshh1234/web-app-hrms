@@ -109,13 +109,13 @@ export const OrganizationTab: React.FC = () => {
             <div className="flex justify-end gap-3 pt-2">
               <button 
                 onClick={() => { setLocSearchName(''); setLocSearchCity(''); setLocSearchCountry(''); }}
-                className="px-6 py-2 border border-[#0473b8] text-[#0473b8] text-xs font-bold rounded-lg hover:bg-blue-50/50 transition-all bg-white cursor-pointer"
+                className="px-6 py-2 border border-[#006666] text-[#006666] text-xs font-bold rounded-lg hover:bg-emerald-50/50 transition-all bg-white cursor-pointer"
               >
                 Reset
               </button>
               <button 
                 onClick={() => toast.info("Searching locations...")}
-                className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
+                className="px-6 py-2 bg-[#004848] hover:bg-[#003333] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
               >
                 Search
               </button>
@@ -128,7 +128,7 @@ export const OrganizationTab: React.FC = () => {
               <span className="text-[10px] font-bold text-slate-500">({locations.length}) Records Found</span>
               <button 
                 onClick={() => toast.info("Add Location")} 
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#004848] hover:bg-[#003333] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors cursor-pointer"
               >
                 <Plus className="h-3 w-3" />
                 <span>Add</span>

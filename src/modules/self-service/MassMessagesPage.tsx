@@ -178,13 +178,13 @@ export const MassMessagesPage: React.FC = () => {
                 <button 
                   type="button"
                   onClick={() => toast.success('Draft saved successfully!')}
-                  className="px-6 py-2 border border-[#0473b8] hover:bg-blue-50/50 text-[#0473b8] font-bold rounded-lg text-xs transition-all bg-white cursor-pointer"
+                  className="px-6 py-2 border border-[#006666] hover:bg-emerald-50/50 text-[#006666] font-bold rounded-lg text-xs transition-all bg-white cursor-pointer"
                 >
                   Save Draft
                 </button>
                 <button 
                   onClick={handleSend}
-                  className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white font-bold rounded-lg text-xs transition-colors cursor-pointer"
+                  className="px-6 py-2 bg-[#004848] hover:bg-[#003333] text-white font-bold rounded-lg text-xs transition-colors cursor-pointer"
                 >
                   Send Message
                 </button>

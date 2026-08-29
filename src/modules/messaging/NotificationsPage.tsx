@@ -134,7 +134,7 @@ export const NotificationsPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         
         {/* Left side: Recipients Checklist */}
-        <div className="md:col-span-5 bg-white border-2 border-blue-500 rounded-xl p-5 shadow-sm space-y-4">
+        <div className="md:col-span-5 bg-white border-2 border-[#006666] rounded-xl p-5 shadow-sm space-y-4">
           <h3 className="text-xs font-bold text-slate-700">Recipients</h3>
           
           {/* Search box */}
@@ -145,7 +145,7 @@ export const NotificationsPage: React.FC = () => {
               placeholder="Search........"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-205 bg-slate-50/50 rounded-lg text-xs font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:bg-white focus:border-blue-300"
+              className="w-full pl-9 pr-4 py-2 border border-slate-205 bg-slate-50/50 rounded-lg text-xs font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:bg-white focus:border-emerald-300"
             />
           </div>
 
@@ -159,7 +159,7 @@ export const NotificationsPage: React.FC = () => {
                     type="checkbox"
                     checked={!!selectedDepts[dept]}
                     onChange={() => handleDeptToggle(dept)}
-                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
+                    className="rounded border-slate-300 text-[#006666] focus:ring-[#006666] h-3.5 w-3.5"
                   />
                   <span>{dept}</span>
                 </label>
@@ -183,7 +183,7 @@ export const NotificationsPage: React.FC = () => {
                     type="checkbox"
                     checked={!!selectedEmps[emp.name]}
                     onChange={() => handleEmpToggle(emp.name)}
-                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
+                    className="rounded border-slate-300 text-[#006666] focus:ring-[#006666] h-3.5 w-3.5"
                   />
                   <span>{emp.name} <span className="text-slate-400">({emp.dept})</span></span>
                 </label>
@@ -207,7 +207,7 @@ export const NotificationsPage: React.FC = () => {
               placeholder="Enter the message subject"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-blue-400"
+              className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-xs font-semibold text-slate-800 outline-none focus:border-[#006666]"
             />
           </div>
 
@@ -219,7 +219,7 @@ export const NotificationsPage: React.FC = () => {
               placeholder="Type your message here..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg p-4 text-xs font-semibold text-slate-800 outline-none focus:border-blue-400 resize-none"
+              className="w-full border border-slate-200 rounded-lg p-4 text-xs font-semibold text-slate-800 outline-none focus:border-[#006666] resize-none"
             />
             <div className="text-[10px] font-bold text-slate-400">
               {message.length}/1000 characters
@@ -230,13 +230,13 @@ export const NotificationsPage: React.FC = () => {
           <div className="flex justify-end gap-3 pt-2">
             <button 
               onClick={handleSaveDraft}
-              className="px-6 py-2 border-2 border-blue-400 hover:border-blue-500 text-blue-500 hover:text-blue-600 text-xs font-bold rounded-lg cursor-pointer transition-colors"
+              className="px-6 py-2 border-2 border-[#006666] hover:border-[#004848] text-[#006666] hover:text-[#004848] text-xs font-bold rounded-lg cursor-pointer transition-colors bg-white"
             >
               Save Draft
             </button>
             <button 
               onClick={handleSend}
-              className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer transition-colors"
+              className="px-6 py-2 bg-[#004848] hover:bg-[#003333] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer transition-colors"
             >
               {sendButtonText}
             </button>
