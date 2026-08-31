@@ -125,12 +125,36 @@ input:checked ~ div,
   background-color: #006666 !important;
 }
 
-/* HTML Select Dropdown Option Selection Colors */
+/* HTML Select Dropdown Option Selection Colors & Focus Ring Overrides */
+select {
+  accent-color: #006666 !important;
+  color-scheme: light !important;
+}
+
+select:focus,
+select:focus-visible,
+select:focus-within {
+  border-color: #006666 !important;
+  --tw-ring-color: #006666 !important;
+  outline-color: #006666 !important;
+  box-shadow: 0 0 0 2px rgba(0, 102, 102, 0.2) !important;
+}
+
+select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
 select option:checked,
 select option:hover,
-select option:focus {
-  background-color: #004848 !important;
+select option:focus,
+select option:active,
+select:focus option:checked {
+  background: #006666 linear-gradient(0deg, #006666 0%, #006666 100%) !important;
+  background-color: #006666 !important;
+  box-shadow: 0 0 10px 100px #006666 inset !important;
   color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 
 /* Custom scrollbars */

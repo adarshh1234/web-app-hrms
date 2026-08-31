@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Search, Bell, Menu, User, Briefcase, HardDrive, LogOut } from 'lucide-react';
+import { Search, Bell, Menu, User, Briefcase, HardDrive, LogOut, X } from 'lucide-react';
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -12,6 +12,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen, onToggleMobile, onLogout }) => {
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const hideSearch = location.pathname === '/employees/list' || location.pathname === '/employees';
 
   return (
@@ -38,13 +39,24 @@ export const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen, onT
           <Menu className="h-4 w-4" />
         </button>
         {!hideSearch && (
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-800" />
+          <div className="relative flex-1 max-w-xs focus-within:max-w-md transition-all duration-300 ease-in-out group">
+            <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400 group-focus-within:text-[#006666] group-focus-within:scale-110 transition-all duration-300 pointer-events-none" />
             <input 
               type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search........" 
-              className="w-full pl-9 pr-4 py-2 border border-slate-700 bg-white rounded-lg text-xs font-semibold text-black outline-none focus:border-slate-800 placeholder:text-slate-500"
+              className="w-full pl-10 pr-9 py-2 border border-slate-300 bg-white rounded-full text-xs font-semibold text-slate-900 outline-none transition-all duration-300 ease-in-out placeholder:text-slate-400 focus:border-[#006666] focus:ring-4 focus:ring-[#006666]/15 focus:shadow-md hover:border-slate-400"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors p-0.5 rounded-full cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         )}
       </div>

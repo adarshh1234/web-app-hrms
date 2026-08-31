@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
+  Sparkles,
   Users, 
   UserPlus, 
   Wallet, 
@@ -64,8 +65,9 @@ const SidebarNavLink: React.FC<SidebarNavLinkProps> = ({ to, icon: Icon, label, 
 
 interface SubItem {
   name: string;
-  path: string;
+  path?: string;
   isCustomActive?: (pathname: string, search: string) => boolean;
+  children?: SubItem[];
 }
 
 interface SidebarNavGroupProps {
@@ -80,6 +82,94 @@ interface SidebarNavGroupProps {
   items: SubItem[];
   location: { pathname: string; search: string };
 }
+
+const SidebarSubItem: React.FC<{ sub: SubItem; location: { pathname: string; search: string } }> = ({ sub, location }) => {
+  const isChildActive = sub.children?.some(c => 
+    c.isCustomActive ? c.isCustomActive(location.pathname, location.search) : (c.path && location.pathname === c.path)
+  ) || (sub.path && location.pathname === sub.path);
+
+  const [isSubExpanded, setIsSubExpanded] = useState<boolean>(true);
+
+  if (sub.children && sub.children.length > 0) {
+    return (
+      <div className="w-full space-y-0.5">
+        <NavLink
+          to={sub.path || '#'}
+          onClick={() => {
+            if (!isSubExpanded) setIsSubExpanded(true);
+          }}
+          className={({ isActive }) => {
+            const active = isChildActive || isActive;
+            return `w-full flex items-center justify-between px-3 py-2 text-[13px] font-medium rounded-full transition-all duration-150 select-none ${
+              active
+                ? 'bg-gradient-to-r from-[#002222] to-[#006666] text-white font-semibold shadow-xs'
+                : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
+            }`;
+          }}
+        >
+          <span className="truncate">{sub.name}</span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsSubExpanded(!isSubExpanded);
+            }}
+            className="p-0.5 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
+          >
+            <ChevronDown
+              className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${
+                isSubExpanded ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+        </NavLink>
+
+        {isSubExpanded && (
+          <div className="pl-4 pr-1 pt-0.5 pb-0.5 space-y-0.5 border-l-2 border-slate-100 ml-3">
+            {sub.children.map((child) => (
+              <NavLink
+                key={child.name}
+                to={child.path || '#'}
+                className={({ isActive }) => {
+                  const active = child.isCustomActive
+                    ? child.isCustomActive(location.pathname, location.search)
+                    : isActive;
+                  return `block px-3 py-1.5 text-[12px] font-medium rounded-full transition-all duration-150 ${
+                    active
+                      ? 'bg-[#004848] text-white font-semibold shadow-2xs'
+                      : 'text-slate-500 hover:bg-slate-100/70 hover:text-slate-900'
+                  }`;
+                }}
+              >
+                {child.name}
+              </NavLink>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <NavLink
+      key={sub.name}
+      to={sub.path || '#'}
+      className={({ isActive }) => {
+        const active = sub.isCustomActive
+          ? sub.isCustomActive(location.pathname, location.search)
+          : isActive;
+        return `block px-3 py-2 text-[13px] font-medium rounded-full transition-all duration-150 ${
+          active
+            ? 'bg-gradient-to-r from-[#002222] to-[#006666] text-white font-semibold shadow-xs'
+            : 'text-slate-500 hover:bg-slate-100/70 hover:text-slate-900'
+        }`;
+      }}
+    >
+      {sub.name}
+    </NavLink>
+  );
+};
 
 const SidebarNavGroup: React.FC<SidebarNavGroupProps> = ({
   label,
@@ -122,22 +212,7 @@ const SidebarNavGroup: React.FC<SidebarNavGroupProps> = ({
       {isOpen && isExpanded && (
         <div className="pl-9 pr-1 pt-1 pb-1 space-y-0.5">
           {items.map((sub) => (
-            <NavLink
-              key={sub.name}
-              to={sub.path}
-              className={({ isActive }) => {
-                const active = sub.isCustomActive
-                  ? sub.isCustomActive(location.pathname, location.search)
-                  : isActive;
-                return `block px-3 py-2 text-[13px] font-medium rounded-full transition-all duration-150 ${
-                  active
-                    ? 'bg-gradient-to-r from-[#002222] to-[#006666] text-white font-semibold shadow-xs'
-                    : 'text-slate-500 hover:bg-slate-100/70 hover:text-slate-900'
-                }`;
-              }}
-            >
-              {sub.name}
-            </NavLink>
+            <SidebarSubItem key={sub.name} sub={sub} location={location} />
           ))}
         </div>
       )}
@@ -152,6 +227,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
 
   // Accordion Expand/Collapse States
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
+    huremasoAi: false,
     employee: false,
     config: false,
     overtime: false,
@@ -171,16 +247,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
     setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
   };
 
+  const isHuremasoAiActive = location.pathname.startsWith('/ai');
+  const isHuremasoAiChildActive = isHuremasoAiActive;
+
   const isEmployeeActive = 
     location.pathname.startsWith('/employees') || 
     location.pathname.startsWith('/performance') ||
     location.pathname.startsWith('/time/overtime-pool') ||
     location.pathname.startsWith('/time/finance-request') ||
     location.pathname.startsWith('/time/wake-off') ||
-    location.pathname.startsWith('/time/time-off');
+    location.pathname.startsWith('/time/time-off') ||
+    location.pathname.startsWith('/admin/nationalities') ||
+    location.pathname.startsWith('/time/project-info');
 
   const isEmployeeChildActive = isEmployeeActive;
-  
+
   const isPayrollActive = location.pathname.startsWith('/payroll');
   const isPayrollChildActive = location.pathname.startsWith('/payroll/');
 
@@ -190,14 +271,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
   const isNotificationsActive = location.pathname.startsWith('/notifications');
   const isNotificationsChildActive = location.pathname.startsWith('/notifications/');
 
-  const isTimeGroupActive = location.pathname.startsWith('/time/timesheets') || location.pathname.startsWith('/time/attendance') || location.pathname.startsWith('/time/report') || location.pathname.startsWith('/time/project-info');
+  const isTimeGroupActive = location.pathname.startsWith('/time/timesheets') || location.pathname.startsWith('/time/attendance') || location.pathname.startsWith('/time/report');
   const isTimeChildActive = isTimeGroupActive;
 
   const isEventsActive = location.pathname.startsWith('/events');
   const isEventsChildActive = location.pathname.startsWith('/events/');
 
-  const isAdminActive = location.pathname.startsWith('/admin');
-  const isAdminChildActive = location.pathname.startsWith('/admin/');
+  const isAdminActive = location.pathname.startsWith('/admin') && !location.pathname.startsWith('/admin/nationalities');
+  const isAdminChildActive = isAdminActive;
 
   const isSelfServiceActive = location.pathname.startsWith('/self-service') || location.pathname.startsWith('/my-info');
   const isSelfServiceChildActive = location.pathname.startsWith('/self-service/') || location.pathname.startsWith('/my-info');
@@ -255,9 +336,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
           {/* Dashboard */}
           <SidebarNavLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" isOpen={isOpen} />
 
+          {/* HUREMASO+AI */}
+          <SidebarNavGroup
+            label="HUREMASO+AI"
+            icon={Sparkles}
+            groupKey="huremasoAi"
+            isGroupActive={isHuremasoAiActive}
+            isChildActive={isHuremasoAiChildActive}
+            isOpen={isOpen}
+            isExpanded={expandedGroups.huremasoAi}
+            onToggle={toggleGroup}
+            location={location}
+            items={[
+              { name: 'Predictive Workforce Analytics & Flight Risk Detection', path: '/ai/predictive-analytics' },
+              { name: 'Autonomous Performance & Skill Management', path: '/ai/autonomous-performance' },
+              { name: 'Next-Gen Employee Experience (EX) & Conversational HR', path: '/ai/employee-experience' },
+              { name: 'Automated Compliance & Borderless Operations', path: '/ai/automated-compliance' }
+            ]}
+          />
+
           {/* Employee Management */}
           <SidebarNavGroup
-            label="Employee Management (Exist)"
+            label="Employee Management"
             icon={Users}
             groupKey="employee"
             isGroupActive={isEmployeeActive}
@@ -268,6 +368,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
             location={location}
             items={[
               { name: 'Employee List', path: '/employees/list' },
+              { name: 'Nationalities', path: '/admin/nationalities' },
+              { name: 'Department', path: '/employees/department' },
+              { name: 'Location', path: '/employees/location' },
+              { name: 'Projects', path: '/time/project-info' },
               { name: 'Employee documents', path: '/employees/documents' },
               { name: 'Configuration', path: '/employees/config' },
               { name: 'Report', path: '/employees/report' },
@@ -332,10 +436,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
             onToggle={toggleGroup}
             location={location}
             items={[
-              { name: 'Support Events', path: '/events/support' },
               { name: 'All Events', path: '/events/all' },
-              { name: 'Add Event', path: '/events/add' },
-              { name: 'Events Calendar', path: '/events/calendar' }
+              { name: 'Support Events', path: '/events/support' },
+              { name: 'Events news letter', path: '/events/newsletter' },
+              { name: 'add/Mange Events', path: '/events/add' },
+              { name: 'Events Callender', path: '/events/calendar' },
+              { name: 'Budget', path: '/events/budget' }
             ]}
           />
 

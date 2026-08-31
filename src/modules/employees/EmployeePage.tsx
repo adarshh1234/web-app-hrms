@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   Search, 
   Trash2, 
@@ -20,6 +21,21 @@ import Badge from '../../components/common/Badge';
 
 export const EmployeePage: React.FC = () => {
   const toast = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const getActiveTabFromPath = (pathname: string) => {
+    if (pathname.includes('/probation')) return 'probation';
+    if (pathname.includes('/training')) return 'training';
+    if (pathname.includes('/interns')) return 'interns';
+    return 'staff';
+  };
+
+  const [activeTab, setActiveTab] = useState<'probation' | 'training' | 'interns' | 'staff'>(() => getActiveTabFromPath(location.pathname));
+
+  useEffect(() => {
+    setActiveTab(getActiveTabFromPath(location.pathname));
+  }, [location.pathname]);
   // Database States
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -185,6 +201,34 @@ export const EmployeePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Top Sub-pages Pill Navigation */}
+      <div className="flex flex-wrap gap-3">
+        {[
+          { id: 'probation', label: 'On Probation', path: '/employees/probation' },
+          { id: 'training', label: 'Training', path: '/employees/training' },
+          { id: 'interns', label: 'Interns', path: '/employees/interns' },
+          { id: 'staff', label: 'Staff List', path: '/employees/list' },
+        ].map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id as any);
+                navigate(tab.path);
+              }}
+              className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                isActive
+                  ? 'bg-blue-50 text-[#0473b8] font-extrabold border border-blue-200 shadow-sm'
+                  : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* 1. Search Collapsible Card */}
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
         <h2 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">Search</h2>

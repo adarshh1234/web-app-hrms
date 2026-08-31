@@ -6,10 +6,13 @@ import Loader from './components/common/Loader';
 // Lazy loading route components for performance & bundle splitting
 const LoginPage = lazy(() => import('./modules/login/LoginPage'));
 const DashboardPage = lazy(() => import('./modules/dashboard/DashboardPage'));
+const HuremasoAIPage = lazy(() => import('./modules/ai/HuremasoAIPage'));
 const EmployeePage = lazy(() => import('./modules/employees/EmployeePage'));
 const EmployeeDocumentsPage = lazy(() => import('./modules/employees/EmployeeDocumentsPage'));
 const EmployeeConfigPage = lazy(() => import('./modules/employees/EmployeeConfigPage'));
 const EmployeeReportPage = lazy(() => import('./modules/employees/EmployeeReportPage'));
+const DepartmentPage = lazy(() => import('./modules/employees/DepartmentPage'));
+const LocationPage = lazy(() => import('./modules/employees/LocationPage'));
 const RecruitmentPage = lazy(() => import('./modules/recruitment/RecruitmentPage'));
 const TimePage = lazy(() => import('./modules/time/TimePage'));
 const TimesheetsPage = lazy(() => import('./modules/time/TimesheetsPage'));
@@ -25,6 +28,8 @@ const SupportEventsPage = lazy(() => import('./modules/events/SupportEventsPage'
 const AllEventsPage = lazy(() => import('./modules/events/AllEventsPage'));
 const AddEventPage = lazy(() => import('./modules/events/AddEventPage'));
 const EventsCalendarPage = lazy(() => import('./modules/events/EventsCalendarPage'));
+const EventsNewsletterPage = lazy(() => import('./modules/events/EventsNewsletterPage'));
+const EventsBudgetPage = lazy(() => import('./modules/events/EventsBudgetPage'));
 const PerformancePage = lazy(() => import('./modules/performance/PerformancePage'));
 const MyInfoPage = lazy(() => import('./modules/my-info/MyInfoPage'));
 const TravelDocumentsPage = lazy(() => import('./modules/self-service/TravelDocumentsPage'));
@@ -89,9 +94,22 @@ export const App: React.FC = () => {
           >
             <Route path="/dashboard" element={<DashboardPage />} />
             
+            {/* HUREMASO+AI Routes */}
+            <Route path="/ai" element={<Navigate to="/ai/predictive-analytics" replace />} />
+            <Route path="/ai/predictive-analytics" element={<HuremasoAIPage />} />
+            <Route path="/ai/autonomous-performance" element={<HuremasoAIPage />} />
+            <Route path="/ai/employee-experience" element={<HuremasoAIPage />} />
+            <Route path="/ai/automated-compliance" element={<HuremasoAIPage />} />
+            
             {/* Employee Management Nested Routes */}
             <Route path="/employees" element={<Navigate to="/employees/list" replace />} />
             <Route path="/employees/list" element={<EmployeePage />} />
+            <Route path="/employees/probation" element={<EmployeePage />} />
+            <Route path="/employees/training" element={<EmployeePage />} />
+            <Route path="/employees/interns" element={<EmployeePage />} />
+            <Route path="/employees/department" element={<DepartmentPage />} />
+            <Route path="/employees/location" element={<LocationPage />} />
+            <Route path="/employees/projects" element={<ProjectInfoPage />} />
             <Route path="/employees/documents" element={<EmployeeDocumentsPage />} />
             <Route path="/employees/config" element={<EmployeeConfigPage />} />
             <Route path="/employees/config/optional" element={<EmployeeConfigPage />} />
@@ -118,11 +136,13 @@ export const App: React.FC = () => {
             <Route path="/time/wake-off" element={<WakeOffPage />} />
             <Route path="/time/time-off" element={<TimeOffRequestPage />} />
 
-            <Route path="/events" element={<Navigate to="/events/support" replace />} />
-            <Route path="/events/support" element={<SupportEventsPage />} />
+            <Route path="/events" element={<Navigate to="/events/all" replace />} />
             <Route path="/events/all" element={<AllEventsPage />} />
+            <Route path="/events/support" element={<SupportEventsPage />} />
+            <Route path="/events/newsletter" element={<EventsNewsletterPage />} />
             <Route path="/events/add" element={<AddEventPage />} />
             <Route path="/events/calendar" element={<EventsCalendarPage />} />
+            <Route path="/events/budget" element={<EventsBudgetPage />} />
             <Route path="/performance" element={<PerformancePage />} />
             <Route path="/my-info" element={<MyInfoPage />} />
             <Route path="/self-service" element={<Navigate to="/self-service/travel" replace />} />
