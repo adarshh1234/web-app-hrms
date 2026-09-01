@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Bell, Menu, User, Briefcase, HardDrive, LogOut, X } from 'lucide-react';
 
 interface HeaderProps {
@@ -11,6 +11,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen, onToggleMobile, onLogout }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const hideSearch = location.pathname === '/employees/list' || location.pathname === '/employees';
@@ -65,7 +66,10 @@ export const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen, onT
       <div className="flex items-center gap-3 relative">
         {/* Profile Avatar (Sarah Joseph) */}
         <button 
-          onClick={() => setShowDropdown(!showDropdown)}
+          onClick={() => {
+            setShowDropdown(false);
+            navigate('/profile');
+          }}
           className="h-9 w-9 rounded-full overflow-hidden border border-slate-200 hover:border-slate-300 transition-all cursor-pointer bg-slate-100 flex items-center justify-center font-bold text-xs relative"
           title="User Profile"
         >
@@ -80,7 +84,13 @@ export const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen, onT
         {showDropdown && (
           <div className="absolute top-12 right-0 z-50 w-64 bg-white rounded-3xl p-4 shadow-2xl border border-slate-200 text-slate-800 space-y-3 animate-in fade-in slide-in-from-top-2 duration-150">
             {/* Header Info */}
-            <div className="flex items-center gap-3">
+            <div 
+              className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => {
+                setShowDropdown(false);
+                navigate('/profile');
+              }}
+            >
               <div className="relative shrink-0">
                 <img 
                   src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" 

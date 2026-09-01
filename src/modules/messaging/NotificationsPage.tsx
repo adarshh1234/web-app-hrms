@@ -35,6 +35,10 @@ export const NotificationsPage: React.FC = () => {
     pageTitle = 'Employee App Messages';
     historyTitle = 'Message History';
     sendButtonText = 'Send Message';
+  } else if (path.includes('/huremaso')) {
+    pageTitle = 'Huremaso Broadcast Notifications';
+    historyTitle = 'Huremaso Notification History';
+    sendButtonText = 'Send Huremaso Notification';
   }
 
   // Recipient checkboxes state

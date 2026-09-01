@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CheckCircle } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { CheckCircle, Wrench, RefreshCw, ShieldCheck, Database, Server, Activity } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
 import Modal from '../../components/common/Modal';
 import Button from '../../components/common/Button';
@@ -9,6 +10,11 @@ import { SupportTicket } from '../../types';
 
 export const MaintenancePage: React.FC = () => {
   const toast = useToast();
+  const location = useLocation();
+  const path = location.pathname;
+
+  const isHuremasoMaintenance = path.includes('/huremaso');
+
   const [showModal, setShowModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
@@ -58,8 +64,89 @@ export const MaintenancePage: React.FC = () => {
     toast.success('Support ticket created successfully!');
   };
 
+  if (isHuremasoMaintenance) {
+    return (
+      <div className="space-y-6 max-w-5xl animate-fade-in">
+        {/* Header bar */}
+        <div className="bg-gradient-to-r from-[#002222] via-[#004848] to-[#006666] rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-400/20 text-teal-200 border border-teal-300/30 text-xs font-bold uppercase tracking-wider">
+              <Wrench className="h-3.5 w-3.5 text-teal-300" />
+              <span>Huremaso Infrastructure Maintenance</span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-extrabold text-white m-0">Huremaso</h1>
+            <p className="text-xs text-teal-100/80 m-0">
+              System health diagnostics, database maintenance triggers, and scheduled platform upgrades.
+            </p>
+          </div>
+          <button
+            onClick={() => toast.success("Diagnostics completed. All Huremaso services optimal.")}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white text-[#004848] hover:bg-teal-50 rounded-xl text-xs font-extrabold transition-all cursor-pointer shadow-sm shrink-0"
+          >
+            <RefreshCw className="h-4 w-4" />
+            <span>Run System Diagnostics</span>
+          </button>
+        </div>
+
+        {/* System Health Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="flex items-center gap-2 text-slate-500 font-bold text-xs">
+              <Server className="h-4 w-4 text-[#004848]" />
+              <span>Application Servers</span>
+            </div>
+            <div className="text-2xl font-extrabold text-slate-900">99.98% Uptime</div>
+            <span className="text-[11px] font-semibold text-emerald-600">All 8 server nodes active</span>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="flex items-center gap-2 text-slate-500 font-bold text-xs">
+              <Database className="h-4 w-4 text-[#004848]" />
+              <span>Database Integrity</span>
+            </div>
+            <div className="text-2xl font-extrabold text-slate-900">Optimized</div>
+            <span className="text-[11px] font-semibold text-teal-600">0 Index Fragmentations</span>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="flex items-center gap-2 text-slate-500 font-bold text-xs">
+              <Activity className="h-4 w-4 text-[#004848]" />
+              <span>Cache Latency</span>
+            </div>
+            <div className="text-2xl font-extrabold text-slate-900">12 ms</div>
+            <span className="text-[11px] font-semibold text-emerald-600">Redis cluster fully synchronized</span>
+          </div>
+        </div>
+
+        {/* Maintenance Logs */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold text-slate-900 m-0 border-b border-slate-150 pb-3">Scheduled Maintenance Log</h3>
+          <div className="space-y-3">
+            {[
+              { title: 'Database Index Rebuild & Vacuuming', date: 'August 28, 2026 - 02:00 AM', duration: '14 mins', status: 'Completed' },
+              { title: 'Security Patch Release v4.8.2', date: 'August 15, 2026 - 01:30 AM', duration: '8 mins', status: 'Completed' },
+              { title: 'Upcoming SSL & Encryption Rotation', date: 'September 15, 2026 - 03:00 AM', duration: 'Scheduled', status: 'Pending' },
+            ].map((item, idx) => (
+              <div key={idx} className="p-4 border border-slate-200 rounded-xl bg-slate-50/60 flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 m-0">{item.title}</h4>
+                  <p className="text-[11px] text-slate-500 font-semibold mt-0.5">{item.date} • Duration: {item.duration}</p>
+                </div>
+                <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
+                  item.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'
+                }`}>
+                  {item.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6 max-w-5xl animate-fade-in">
       {/* Header bar */}
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-bold text-slate-900 m-0">Active Support Tickets</h1>

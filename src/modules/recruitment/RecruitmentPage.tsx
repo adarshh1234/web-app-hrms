@@ -7,10 +7,11 @@ import TalentPoolTab from './components/TalentPoolTab';
 import FeedbackTab from './components/FeedbackTab';
 import CandidatesTab from './components/CandidatesTab';
 import VacanciesTab from './components/VacanciesTab';
+import PostInLetgetinTab from './components/PostInLetgetinTab';
 
 export const RecruitmentPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab') || 'candidates';
+  const tabParam = searchParams.get('tab') || 'vacancies';
   const activeTab = tabParam as
     | 'onboarding'
     | 'offboarding'
@@ -20,9 +21,10 @@ export const RecruitmentPage: React.FC = () => {
     | 'talent-pool'
     | 'feedback'
     | 'candidates'
-    | 'vacancies';
+    | 'vacancies'
+    | 'post-letgetin';
 
-  const hideHeader = ['cv-parser', 'post-job', 'track', 'talent-pool', 'feedback', 'candidates', 'vacancies'].includes(activeTab);
+  const hideHeader = ['cv-parser', 'post-job', 'track', 'talent-pool', 'feedback', 'candidates', 'vacancies', 'post-letgetin'].includes(activeTab);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -30,7 +32,7 @@ export const RecruitmentPage: React.FC = () => {
         <div className="flex justify-between items-center select-none">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 m-0 capitalize">
-              Recruitment: {activeTab.replace('-', ' ')}
+              Recruitment Pipeline: {activeTab.replace('-', ' ')}
             </h1>
             <p className="text-[10px] font-bold text-slate-400 mt-1.5 uppercase">
               Huremaso Recruitment Pipeline Settings
@@ -46,6 +48,7 @@ export const RecruitmentPage: React.FC = () => {
       {activeTab === 'feedback' && <FeedbackTab />}
       {activeTab === 'candidates' && <CandidatesTab />}
       {activeTab === 'vacancies' && <VacanciesTab />}
+      {activeTab === 'post-letgetin' && <PostInLetgetinTab />}
 
       {['onboarding', 'offboarding'].includes(activeTab) && (
         <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-xs font-bold text-slate-400">

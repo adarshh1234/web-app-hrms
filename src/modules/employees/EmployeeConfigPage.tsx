@@ -83,10 +83,10 @@ export const EmployeeConfigPage: React.FC = () => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all border cursor-pointer select-none ${
               activeTab === tab.id 
-                ? 'bg-blue-50 text-[#0473b8] border-blue-200 shadow-sm'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                ? 'bg-gradient-to-r from-[#002222] via-[#004848] to-[#006666] text-white font-extrabold border-transparent shadow-sm'
+                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
             {tab.label}
@@ -109,7 +109,7 @@ export const EmployeeConfigPage: React.FC = () => {
                   onChange={(e) => setOptionalFields({...optionalFields, nickname: e.target.checked})}
                   className="sr-only peer" 
                 />
-                <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#004848]"></div>
               </label>
             </div>
 
@@ -122,7 +122,7 @@ export const EmployeeConfigPage: React.FC = () => {
                   onChange={(e) => setOptionalFields({...optionalFields, smoker: e.target.checked})}
                   className="sr-only peer" 
                 />
-                <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#004848]"></div>
               </label>
             </div>
 
@@ -135,7 +135,7 @@ export const EmployeeConfigPage: React.FC = () => {
                   onChange={(e) => setOptionalFields({...optionalFields, family: e.target.checked})}
                   className="sr-only peer" 
                 />
-                <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#004848]"></div>
               </label>
             </div>
 
@@ -148,7 +148,7 @@ export const EmployeeConfigPage: React.FC = () => {
                   onChange={(e) => setOptionalFields({...optionalFields, education: e.target.checked})}
                   className="sr-only peer" 
                 />
-                <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#004848]"></div>
               </label>
             </div>
           </div>

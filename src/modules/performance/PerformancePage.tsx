@@ -46,10 +46,10 @@ export const PerformancePage: React.FC = () => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all border cursor-pointer select-none ${
               activeTab === tab.id 
-                ? 'bg-blue-50 text-[#0473b8] border-blue-200 shadow-sm font-extrabold'
-                : 'bg-white text-slate-600 border-slate-205 hover:bg-slate-50'
+                ? 'bg-gradient-to-r from-[#002222] via-[#004848] to-[#006666] text-white font-extrabold border-transparent shadow-sm'
+                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
             {tab.label}

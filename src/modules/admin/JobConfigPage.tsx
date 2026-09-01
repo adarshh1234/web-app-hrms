@@ -1,10 +1,33 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
+import { LocationPage } from '../employees/LocationPage';
+import { DepartmentPage } from '../employees/DepartmentPage';
+import OrganizationTab from './components/OrganizationTab';
+
+type JobTabType = 
+  | 'job' 
+  | 'grades' 
+  | 'status' 
+  | 'categories' 
+  | 'shifts' 
+  | 'locations' 
+  | 'departments' 
+  | 'organizations';
 
 export const JobConfigPage: React.FC = () => {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<'job' | 'grades' | 'status' | 'categories' | 'shifts'>('grades');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab') as JobTabType | null;
+  const validTabs: JobTabType[] = ['job', 'grades', 'status', 'categories', 'shifts', 'locations', 'departments', 'organizations'];
+  const activeTab: JobTabType = tabParam && validTabs.includes(tabParam)
+    ? tabParam
+    : 'job';
+
+  const setActiveTab = (tab: JobTabType) => {
+    setSearchParams({ tab });
+  };
 
   // Subtab 2: Pay Grades
   const [payGrades, setPayGrades] = useState([
@@ -55,22 +78,25 @@ export const JobConfigPage: React.FC = () => {
   return (
     <div className="space-y-6">
       
-      {/* 5 Tab pills at the top */}
-      <div className="flex flex-wrap gap-3">
-        {([
-          { id: 'job', label: 'Job' },
+      {/* 8 Tab pills at the top */}
+      <div className="flex flex-wrap gap-2.5 border-b border-slate-200 pb-4">
+        {[
+          { id: 'job', label: 'Jobs' },
           { id: 'grades', label: 'Pay Grades' },
           { id: 'status', label: 'Employment Status' },
           { id: 'categories', label: 'Job Categories' },
-          { id: 'shifts', label: 'Work Shifts' }
-        ] as const).map(pill => (
+          { id: 'shifts', label: 'Work Shifts' },
+          { id: 'locations', label: 'Locations' },
+          { id: 'departments', label: 'Departments' },
+          { id: 'organizations', label: 'Organizations' }
+        ].map(pill => (
           <button
             key={pill.id}
-            onClick={() => setActiveTab(pill.id)}
-            className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${
+            onClick={() => setActiveTab(pill.id as JobTabType)}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer select-none ${
               activeTab === pill.id 
-                ? 'bg-blue-50 text-[#0473b8] font-extrabold border border-blue-200 shadow-sm'
-                : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+                ? 'bg-gradient-to-r from-[#002222] via-[#004848] to-[#006666] text-white font-extrabold shadow-sm'
+                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
             {pill.label}
@@ -78,7 +104,7 @@ export const JobConfigPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Tab Panel 1: Job (Left blank per instruction) */}
+      {/* Tab Panel 1: Jobs */}
       {activeTab === 'job' && (
         <div className="space-y-4">
           <h2 className="text-sm font-bold text-slate-900 m-0">Job Titles</h2>
@@ -101,7 +127,7 @@ export const JobConfigPage: React.FC = () => {
         </div>
       )}
 
-      {/* Tab Panel 2: Pay Grades (Image 2) */}
+      {/* Tab Panel 2: Pay Grades */}
       {activeTab === 'grades' && (
         <div className="space-y-4">
           <h2 className="text-sm font-bold text-slate-900 m-0">Pay Grades</h2>
@@ -151,7 +177,7 @@ export const JobConfigPage: React.FC = () => {
         </div>
       )}
 
-      {/* Tab Panel 3: Employment Status (Image 3) */}
+      {/* Tab Panel 3: Employment Status */}
       {activeTab === 'status' && (
         <div className="space-y-4">
           <h2 className="text-sm font-bold text-slate-900 m-0">Employment Status</h2>
@@ -199,7 +225,7 @@ export const JobConfigPage: React.FC = () => {
         </div>
       )}
 
-      {/* Tab Panel 4: Job Categories (Image 4) */}
+      {/* Tab Panel 4: Job Categories */}
       {activeTab === 'categories' && (
         <div className="space-y-4">
           <h2 className="text-sm font-bold text-slate-900 m-0">Job Categories</h2>
@@ -247,7 +273,7 @@ export const JobConfigPage: React.FC = () => {
         </div>
       )}
 
-      {/* Tab Panel 5: Work Shifts (Image 5) */}
+      {/* Tab Panel 5: Work Shifts */}
       {activeTab === 'shifts' && (
         <div className="space-y-4">
           <h2 className="text-sm font-bold text-slate-900 m-0">Work Shifts</h2>
@@ -281,8 +307,8 @@ export const JobConfigPage: React.FC = () => {
                   className="grid grid-cols-5 items-center bg-white border border-slate-200 rounded-lg py-2.5 px-4 shadow-sm text-xs font-bold text-slate-800"
                 >
                   <span>{s.name}</span>
-                  <span className="text-slate-550 font-semibold">{s.from}</span>
-                  <span className="text-slate-550 font-semibold">{s.to}</span>
+                  <span className="text-slate-500 font-semibold">{s.from}</span>
+                  <span className="text-slate-500 font-semibold">{s.to}</span>
                   <span>{s.hours}</span>
                   
                   <div className="flex justify-end gap-2.5">
@@ -300,6 +326,15 @@ export const JobConfigPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Tab Panel 6: Locations */}
+      {activeTab === 'locations' && <LocationPage />}
+
+      {/* Tab Panel 7: Departments */}
+      {activeTab === 'departments' && <DepartmentPage />}
+
+      {/* Tab Panel 8: Organizations */}
+      {activeTab === 'organizations' && <OrganizationTab />}
 
     </div>
   );

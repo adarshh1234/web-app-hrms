@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import CorporateBrandingTab from './components/CorporateBrandingTab';
 import SystemUsersTab from './components/SystemUsersTab';
 import JobManagementTab from './components/JobManagementTab';
@@ -7,7 +8,28 @@ import OrganizationTab from './components/OrganizationTab';
 export type AdminTabType = 'branding' | 'users' | 'job' | 'org';
 
 export const AdminPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<AdminTabType>('branding');
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const getInitialTab = (): AdminTabType => {
+    if (location.pathname === '/admin/organization') return 'org';
+    const tabParam = searchParams.get('tab') as AdminTabType | null;
+    if (tabParam && ['branding', 'users', 'job', 'org'].includes(tabParam)) return tabParam;
+    return 'branding';
+  };
+
+  const [activeTab, setActiveTabState] = useState<AdminTabType>(getInitialTab);
+
+  useEffect(() => {
+    if (location.pathname === '/admin/organization') {
+      setActiveTabState('org');
+    }
+  }, [location.pathname]);
+
+  const setActiveTab = (tab: AdminTabType) => {
+    setActiveTabState(tab);
+    setSearchParams({ tab });
+  };
 
   const tabs: { id: AdminTabType; label: string }[] = [
     { id: 'branding', label: 'Corporate Branding' },

@@ -5,6 +5,8 @@ import {
   Sparkles,
   Users, 
   UserPlus, 
+  UserCheck,
+  UserMinus,
   Wallet, 
   Calendar, 
   User, 
@@ -15,6 +17,10 @@ import {
   Settings, 
   Clock, 
   Wrench,
+  HelpCircle,
+  Heart,
+  FileText,
+  CheckSquare,
   Search,
   ChevronDown,
   Briefcase,
@@ -95,12 +101,15 @@ const SidebarSubItem: React.FC<{ sub: SubItem; location: { pathname: string; sea
       <div className="w-full space-y-0.5">
         <NavLink
           to={sub.path || '#'}
-          onClick={() => {
-            if (!isSubExpanded) setIsSubExpanded(true);
+          onClick={(e) => {
+            if (!sub.path || sub.path === '#') {
+              e.preventDefault();
+            }
+            setIsSubExpanded(!isSubExpanded);
           }}
           className={({ isActive }) => {
-            const active = isChildActive || isActive;
-            return `w-full flex items-center justify-between px-3 py-2 text-[13px] font-medium rounded-full transition-all duration-150 select-none ${
+            const active = isChildActive || (sub.path && sub.path !== '#' && isActive);
+            return `w-full flex items-center justify-between px-3 py-2 text-[13px] font-medium rounded-full transition-all duration-150 select-none cursor-pointer ${
               active
                 ? 'bg-gradient-to-r from-[#002222] to-[#006666] text-white font-semibold shadow-xs'
                 : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
@@ -126,24 +135,9 @@ const SidebarSubItem: React.FC<{ sub: SubItem; location: { pathname: string; sea
         </NavLink>
 
         {isSubExpanded && (
-          <div className="pl-4 pr-1 pt-0.5 pb-0.5 space-y-0.5 border-l-2 border-slate-100 ml-3">
+          <div className="pl-3 pr-1 pt-0.5 pb-0.5 space-y-0.5 border-l-2 border-slate-100 ml-3">
             {sub.children.map((child) => (
-              <NavLink
-                key={child.name}
-                to={child.path || '#'}
-                className={({ isActive }) => {
-                  const active = child.isCustomActive
-                    ? child.isCustomActive(location.pathname, location.search)
-                    : isActive;
-                  return `block px-3 py-1.5 text-[12px] font-medium rounded-full transition-all duration-150 ${
-                    active
-                      ? 'bg-[#004848] text-white font-semibold shadow-2xs'
-                      : 'text-slate-500 hover:bg-slate-100/70 hover:text-slate-900'
-                  }`;
-                }}
-              >
-                {child.name}
-              </NavLink>
+              <SidebarSubItem key={child.name} sub={child} location={location} />
             ))}
           </div>
         )}
@@ -239,7 +233,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
     adminGroup: false,
     selfServiceGroup: false,
     recruitmentGroup: false,
-    performance: false
+    performance: false,
+    maintenanceGroup: false,
+    supportGroup: false,
+    employeeAppGroup: false,
+    wellnessGroup: false,
+    performanceAppraisalGroup: false,
+    hrLettersMemosGroup: false,
+    onboardingGroup: false,
+    offboardingGroup: false,
+    tasksGroup: false
   });
 
   const toggleGroup = (group: string, e: React.MouseEvent) => {
@@ -253,17 +256,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
   const isEmployeeActive = 
     location.pathname.startsWith('/employees') || 
     location.pathname.startsWith('/performance') ||
+    location.pathname.startsWith('/self-service/hr-letters') ||
+    location.pathname.startsWith('/self-service/mass-messages') ||
+    location.pathname.startsWith('/self-service/leave') ||
+    location.pathname.startsWith('/time/timesheets') ||
     location.pathname.startsWith('/time/overtime-pool') ||
     location.pathname.startsWith('/time/finance-request') ||
     location.pathname.startsWith('/time/wake-off') ||
     location.pathname.startsWith('/time/time-off') ||
     location.pathname.startsWith('/admin/nationalities') ||
+    location.pathname.startsWith('/admin/job') ||
+    location.pathname.startsWith('/admin/organization') ||
     location.pathname.startsWith('/time/project-info');
 
   const isEmployeeChildActive = isEmployeeActive;
 
-  const isPayrollActive = location.pathname.startsWith('/payroll');
-  const isPayrollChildActive = location.pathname.startsWith('/payroll/');
+  const isPayrollActive = location.pathname.startsWith('/payroll') || location.pathname.startsWith('/time/finance-request');
+  const isPayrollChildActive = location.pathname.startsWith('/payroll/') || location.pathname.startsWith('/time/finance-request');
 
   const isAssociationActive = location.pathname.startsWith('/association');
   const isAssociationChildActive = location.pathname.startsWith('/association/');
@@ -277,7 +286,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
   const isEventsActive = location.pathname.startsWith('/events');
   const isEventsChildActive = location.pathname.startsWith('/events/');
 
-  const isAdminActive = location.pathname.startsWith('/admin') && !location.pathname.startsWith('/admin/nationalities');
+  const isAdminActive = location.pathname.startsWith('/admin') && !location.pathname.startsWith('/admin/nationalities') && !location.pathname.startsWith('/admin/job') && !location.pathname.startsWith('/admin/organization');
   const isAdminChildActive = isAdminActive;
 
   const isSelfServiceActive = location.pathname.startsWith('/self-service') || location.pathname.startsWith('/my-info');
@@ -285,6 +294,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
 
   const isRecruitmentActive = location.pathname.startsWith('/recruitment');
   const isRecruitmentChildActive = location.pathname.startsWith('/recruitment') && location.search.startsWith('?tab=');
+
+  const isMaintenanceActive = location.pathname.startsWith('/maintenance');
+  const isMaintenanceChildActive = location.pathname.startsWith('/maintenance/');
+
+  const isSupportActive = location.pathname.startsWith('/support');
+  const isSupportChildActive = location.pathname.startsWith('/support/');
+
+  const isEmployeeAppActive = location.pathname.startsWith('/self-service') || location.pathname.startsWith('/my-info') || location.pathname.startsWith('/association');
+  const isEmployeeAppChildActive = isEmployeeAppActive;
+
+  const isWellnessActive = location.pathname.startsWith('/wellness');
+  const isWellnessChildActive = location.pathname.startsWith('/wellness/');
+
+  const isPerformanceAppraisalActive = location.pathname.startsWith('/performance-appraisal');
+  const isPerformanceAppraisalChildActive = isPerformanceAppraisalActive;
+
+  const isHrLettersMemosActive = location.pathname.startsWith('/hr-letters-memos');
+  const isHrLettersMemosChildActive = isHrLettersMemosActive;
+
+  const isOnboardingActive = location.pathname.startsWith('/onboarding');
+  const isOnboardingChildActive = isOnboardingActive;
+
+  const isOffboardingActive = location.pathname.startsWith('/offboarding');
+  const isOffboardingChildActive = isOffboardingActive;
+
+  const isTasksActive = location.pathname.startsWith('/tasks');
+  const isTasksChildActive = isTasksActive;
 
   return (
     <>
@@ -355,6 +391,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
             ]}
           />
 
+          {/* Callender */}
+          <SidebarNavLink to="/callender" icon={Calendar} label="Callender" isOpen={isOpen} />
+
+          {/* Notes */}
+          <SidebarNavLink to="/notes" icon={FileText} label="Notes" isOpen={isOpen} />
+
+          {/* Tasks – */}
+          <SidebarNavGroup
+            label="Tasks –"
+            icon={CheckSquare}
+            groupKey="tasksGroup"
+            isGroupActive={isTasksActive}
+            isChildActive={isTasksChildActive}
+            isOpen={isOpen}
+            isExpanded={expandedGroups.tasksGroup}
+            onToggle={toggleGroup}
+            location={location}
+            items={[
+              { name: 'Task management', path: '/tasks/kanban' },
+              { name: 'Todo list', path: '/tasks/todo' }
+            ]}
+          />
+
           {/* Employee Management */}
           <SidebarNavGroup
             label="Employee Management"
@@ -372,14 +431,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
               { name: 'Department', path: '/employees/department' },
               { name: 'Location', path: '/employees/location' },
               { name: 'Projects', path: '/time/project-info' },
-              { name: 'Employee documents', path: '/employees/documents' },
+              { name: 'Job', path: '/admin/job' },
+              { name: 'Legal', path: '/employees/legal' },
+              { name: 'Employee Documents', path: '/employees/documents' },
+              { name: 'HR Letters', path: '/self-service/hr-letters' },
+              { name: 'Mass Message', path: '/self-service/mass-messages' },
+              { name: 'Leave Management', path: '/self-service/leave' },
+              { name: 'Employee Requests', path: '/time/finance-request' },
+              { name: 'Reports & Analytics', path: '/employees/report' },
               { name: 'Configuration', path: '/employees/config' },
-              { name: 'Report', path: '/employees/report' },
-              { name: 'Performance', path: '/performance' },
-              { name: 'Overttime Pool', path: '/time/overtime-pool' },
-              { name: 'Employee finance requests', path: '/time/finance-request' },
-              { name: 'Wake off', path: '/time/wake-off' },
-              { name: 'Time off Request', path: '/time/time-off' }
+              { name: 'Performance', path: '/performance' }
             ]}
           />
 
@@ -387,23 +448,70 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
           <SidebarNavGroup
             label="Recruitment"
             icon={UserPlus}
-            groupKey="recruitmentGroup"
+            groupKey="recruitmentMainGroup"
             isGroupActive={isRecruitmentActive}
             isChildActive={isRecruitmentChildActive}
             isOpen={isOpen}
-            isExpanded={expandedGroups.recruitmentGroup}
+            isExpanded={expandedGroups.recruitmentMainGroup}
             onToggle={toggleGroup}
             location={location}
             items={[
-              { name: 'Employee Onboarding', path: '/recruitment?tab=onboarding', isCustomActive: (_, s) => s === '?tab=onboarding' },
-              { name: 'Employee Offboarding', path: '/recruitment?tab=offboarding', isCustomActive: (_, s) => s === '?tab=offboarding' },
               { name: 'AI Cv Parser', path: '/recruitment?tab=cv-parser', isCustomActive: (_, s) => s === '?tab=cv-parser' },
               { name: 'Post a Job', path: '/recruitment?tab=post-job', isCustomActive: (_, s) => s === '?tab=post-job' },
               { name: 'Track Applicant', path: '/recruitment?tab=track', isCustomActive: (_, s) => s === '?tab=track' },
               { name: 'Talent Pool', path: '/recruitment?tab=talent-pool', isCustomActive: (_, s) => s === '?tab=talent-pool' },
               { name: 'Feedback and Interview form', path: '/recruitment?tab=feedback', isCustomActive: (_, s) => s === '?tab=feedback' },
-              { name: 'Candidate', path: '/recruitment?tab=candidates', isCustomActive: (p, s) => s === '?tab=candidates' || (p === '/recruitment' && s === '') },
+              { name: 'Candidate', path: '/recruitment?tab=candidates', isCustomActive: (p, s) => s === '?tab=candidates' },
               { name: 'Vacancy', path: '/recruitment?tab=vacancies', isCustomActive: (_, s) => s === '?tab=vacancies' }
+            ]}
+          />
+
+          {/* Employee Onboarding */}
+          <SidebarNavGroup
+            label="Employee Onboarding"
+            icon={UserCheck}
+            groupKey="onboardingGroup"
+            isGroupActive={isOnboardingActive}
+            isChildActive={isOnboardingChildActive}
+            isOpen={isOpen}
+            isExpanded={expandedGroups.onboardingGroup}
+            onToggle={toggleGroup}
+            location={location}
+            items={[
+              { name: 'Final List', path: '/onboarding/final-list' },
+              { name: 'Background Verification', path: '/onboarding/background-verification' },
+              { name: 'Assessments', path: '/onboarding/assessments' },
+              { name: 'Offers', path: '/onboarding/offers' },
+              { name: 'Documents', path: '/onboarding/documents' },
+              { name: 'Provisions', path: '/onboarding/provisions' },
+              { name: 'Buddy/Direct Manager', path: '/onboarding/buddy-manager' },
+              { name: 'Training', path: '/onboarding/training' },
+              { name: 'Visa & Immigration', path: '/onboarding/visa-immigration' },
+              { name: 'Insurance', path: '/onboarding/insurance' },
+              { name: 'Other Miscellaneous', path: '/onboarding/miscellaneous' },
+              { name: 'Reports', path: '/onboarding/reports' }
+            ]}
+          />
+
+          {/* Employee Off-Boarding */}
+          <SidebarNavGroup
+            label="Employee Off-Boarding"
+            icon={UserMinus}
+            groupKey="offboardingGroup"
+            isGroupActive={isOffboardingActive}
+            isChildActive={isOffboardingChildActive}
+            isOpen={isOpen}
+            isExpanded={expandedGroups.offboardingGroup}
+            onToggle={toggleGroup}
+            location={location}
+            items={[
+              { name: 'Document', path: '/offboarding/document' },
+              { name: 'Performance', path: '/offboarding/performance' },
+              { name: 'Settlement', path: '/offboarding/settlement' },
+              { name: 'Legal', path: '/offboarding/legal' },
+              { name: 'Assets', path: '/offboarding/assets' },
+              { name: 'Travel', path: '/offboarding/travel' },
+              { name: 'Report:', path: '/offboarding/report' }
             ]}
           />
 
@@ -419,8 +527,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
             onToggle={toggleGroup}
             location={location}
             items={[
-              { name: 'Payroll in One Tap', path: '/payroll/one-tap' },
-              { name: 'Easy Employee Beniefit Advance', path: '/payroll/benefit-advance' }
+              { name: 'AI – Floating for anything to ask', path: '/huremaso-ai' },
+              { name: 'Payroll in OneTap', path: '/payroll/one-tap' },
+              { name: 'Employee Finance Requests', path: '/time/finance-request' },
+              { name: 'Employee Benefits Advance', path: '/payroll/benefit-advance' },
+              { name: 'Employee Benefits', path: '/payroll/employee-benefits' },
+              { name: 'Performance Benefits', path: '/payroll/performance-benefits' },
+              { name: 'Other Benefits', path: '/payroll/other-benefits' },
+              { name: 'Salary Disbursement', path: '/payroll/salary-disbursement' },
+              { name: 'Payment Application', path: '/payroll/payment-application' }
+            ]}
+          />
+
+          {/* Recruitment Pipeline */}
+          <SidebarNavGroup
+            label="Recruitment Pipeline"
+            icon={UserPlus}
+            groupKey="recruitmentGroup"
+            isGroupActive={isRecruitmentActive}
+            isChildActive={isRecruitmentChildActive}
+            isOpen={isOpen}
+            isExpanded={expandedGroups.recruitmentGroup}
+            onToggle={toggleGroup}
+            location={location}
+            items={[
+              { name: 'Vacancies', path: '/recruitment?tab=vacancies', isCustomActive: (p, s) => s === '?tab=vacancies' || (p === '/recruitment' && s === '') },
+              { name: 'Talent Pool', path: '/recruitment?tab=talent-pool', isCustomActive: (_, s) => s === '?tab=talent-pool' },
+              { name: 'Create Job', path: '/recruitment?tab=post-job', isCustomActive: (_, s) => s === '?tab=post-job' },
+              { name: 'Post in letgetin', path: '/recruitment?tab=post-letgetin', isCustomActive: (_, s) => s === '?tab=post-letgetin' }
             ]}
           />
 
@@ -445,24 +579,78 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
             ]}
           />
 
-          {/* Employee self service */}
+          {/* Performance appraisal */}
           <SidebarNavGroup
-            label="Employee self service"
-            icon={User}
-            groupKey="selfServiceGroup"
-            isGroupActive={isSelfServiceActive}
-            isChildActive={isSelfServiceChildActive}
+            label="Performance appraisal"
+            icon={BarChart3}
+            groupKey="performanceAppraisalGroup"
+            isGroupActive={isPerformanceAppraisalActive}
+            isChildActive={isPerformanceAppraisalChildActive}
             isOpen={isOpen}
-            isExpanded={expandedGroups.selfServiceGroup}
+            isExpanded={expandedGroups.performanceAppraisalGroup}
             onToggle={toggleGroup}
             location={location}
             items={[
-              { name: 'Travel Documents', path: '/self-service/travel' },
-              { name: 'Company Doc-Center', path: '/self-service/company-docs' },
-              { name: 'HR Letters', path: '/self-service/hr-letters' },
-              { name: 'Mass Messages', path: '/self-service/mass-messages' },
-              { name: 'Leave', path: '/self-service/leave' },
-              { name: 'My Info', path: '/my-info' }
+              { name: 'Lists – reports – AI page', path: '/performance-appraisal/reports-ai' },
+              { name: 'Attendance and time', path: '/performance-appraisal/attendance-time' },
+              { name: 'Smart work', path: '/performance-appraisal/smart-work' },
+              { name: 'Psychometric assessments', path: '/performance-appraisal/psychometric' },
+              { name: 'E-SOPs', path: '/performance-appraisal/e-sops' },
+              { name: 'Performance Review', path: '/performance-appraisal/review' },
+              { name: 'References and recommendations', path: '/performance-appraisal/references' },
+              { name: 'Special Strategy Program', path: '/performance-appraisal/strategy' },
+              { name: 'Reports and analytics - AI', path: '/performance-appraisal/analytics-ai' }
+            ]}
+          />
+
+          {/* HR Letters & Memos */}
+          <SidebarNavGroup
+            label="HR Letters & Memos"
+            icon={FileText}
+            groupKey="hrLettersMemosGroup"
+            isGroupActive={isHrLettersMemosActive}
+            isChildActive={isHrLettersMemosChildActive}
+            isOpen={isOpen}
+            isExpanded={expandedGroups.hrLettersMemosGroup}
+            onToggle={toggleGroup}
+            location={location}
+            items={[
+              { name: 'Memo', path: '/hr-letters-memos/memo' }
+            ]}
+          />
+
+          {/* Employee App Management */}
+          <SidebarNavGroup
+            label="Employee App Management"
+            icon={User}
+            groupKey="employeeAppGroup"
+            isGroupActive={isEmployeeAppActive}
+            isChildActive={isEmployeeAppChildActive}
+            isOpen={isOpen}
+            isExpanded={expandedGroups.employeeAppGroup}
+            onToggle={toggleGroup}
+            location={location}
+            items={[
+              { name: 'Employee Self Service', path: '/self-service' }
+            ]}
+          />
+
+          {/* Employee Wellness & Development */}
+          <SidebarNavGroup
+            label="Employee Wellness & Development"
+            icon={Heart}
+            groupKey="wellnessGroup"
+            isGroupActive={isWellnessActive}
+            isChildActive={isWellnessChildActive}
+            isOpen={isOpen}
+            isExpanded={expandedGroups.wellnessGroup}
+            onToggle={toggleGroup}
+            location={location}
+            items={[
+              { name: 'Financial Incentives', path: '/wellness/financial-incentives' },
+              { name: 'Employee Development', path: '/wellness/employee-development' },
+              { name: 'Health & Wellness', path: '/wellness/health-wellness' },
+              { name: 'Workplace Life Balance', path: '/wellness/workplace-life-balance' }
             ]}
           />
 
@@ -484,7 +672,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
               { name: 'Email', path: '/notifications/email' },
               { name: 'SMS', path: '/notifications/sms' },
               { name: 'What\'s App', path: '/notifications/whatsapp' },
-              { name: 'Employee App', path: '/notifications/employee-app' }
+              { name: 'Employee App', path: '/notifications/employee-app' },
+              { name: 'Huremaso', path: '/notifications/huremaso' }
             ]}
           />
 
@@ -530,9 +719,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
             ]}
           />
 
-          {/* Time */}
+          {/* Time & Attendance */}
           <SidebarNavGroup
-            label="Time"
+            label="Time & Attendance"
             icon={Clock}
             groupKey="timeGroup"
             isGroupActive={isTimeGroupActive}
@@ -545,12 +734,50 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
               { name: 'Timesheets', path: '/time/timesheets' },
               { name: 'Attendance', path: '/time/attendance' },
               { name: 'Report', path: '/time/report' },
-              { name: 'Project Info', path: '/time/project-info' }
+              { name: 'Project Info', path: '/time/project-info' },
+              { name: 'Payroll', path: '/time/payroll' },
+              { name: 'OT', path: '/time/overtime' },
+              { name: 'Replacement', path: '/time/replacement' },
+              { name: 'Leave Salary', path: '/time/leave-salary' }
             ]}
           />
 
           {/* Maintenance */}
-          <SidebarNavLink to="/maintenance" icon={Wrench} label="Maintenance" isOpen={isOpen} />
+          <SidebarNavGroup
+            label="Maintenance"
+            icon={Wrench}
+            groupKey="maintenanceGroup"
+            isGroupActive={isMaintenanceActive}
+            isChildActive={isMaintenanceChildActive}
+            isOpen={isOpen}
+            isExpanded={expandedGroups.maintenanceGroup}
+            onToggle={toggleGroup}
+            location={location}
+            items={[
+              { name: 'Active support ticket', path: '/maintenance/tickets' },
+              { name: 'Huremaso', path: '/maintenance/huremaso' }
+            ]}
+          />
+
+          {/* Support */}
+          <SidebarNavGroup
+            label="Support"
+            icon={HelpCircle}
+            groupKey="supportGroup"
+            isGroupActive={isSupportActive}
+            isChildActive={isSupportChildActive}
+            isOpen={isOpen}
+            isExpanded={expandedGroups.supportGroup}
+            onToggle={toggleGroup}
+            location={location}
+            items={[
+              { name: 'Support', path: '/support/general' },
+              { name: 'Maintenance', path: '/support/maintenance' },
+              { name: 'Help', path: '/support/help' },
+              { name: 'Tickets', path: '/support/tickets' },
+              { name: 'Contact', path: '/support/contact' }
+            ]}
+          />
 
         </div>
 
