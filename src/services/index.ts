@@ -7,3 +7,5 @@ export * from './messagingService';
 export * from './timeService';
 export * from './payrollService';
 export * from './performanceService';
+export * from './notificationService';
+

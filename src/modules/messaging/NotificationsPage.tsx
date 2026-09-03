@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
 import Badge from '../../components/common/Badge';
+import notificationService, { BackendNotification } from '../../services/notificationService';
 
 interface HistoryItem {
   id: string;
@@ -18,27 +19,32 @@ export const NotificationsPage: React.FC = () => {
   const location = useLocation();
   const path = location.pathname;
 
-  // Determine sub-page configuration
+  // Determine sub-page configuration and active channel
   let pageTitle = 'E-Mail';
   let historyTitle = 'E- Mail History';
   let sendButtonText = 'Send Message';
+  let activeChannel = 'EMAIL';
 
   if (path.includes('/sms')) {
     pageTitle = 'Messages';
     historyTitle = 'Message History';
     sendButtonText = 'Send Message';
+    activeChannel = 'SMS';
   } else if (path.includes('/whatsapp')) {
     pageTitle = "What's App Messages";
     historyTitle = 'Message History';
     sendButtonText = 'Send Message';
+    activeChannel = 'WHATSAPP';
   } else if (path.includes('/employee-app')) {
     pageTitle = 'Employee App Messages';
     historyTitle = 'Message History';
     sendButtonText = 'Send Message';
+    activeChannel = 'EMPLOYEE_APP';
   } else if (path.includes('/huremaso')) {
     pageTitle = 'Huremaso Broadcast Notifications';
     historyTitle = 'Huremaso Notification History';
     sendButtonText = 'Send Huremaso Notification';
+    activeChannel = 'HUREMASO';
   }
 
   // Recipient checkboxes state
@@ -49,83 +55,146 @@ export const NotificationsPage: React.FC = () => {
   // Form states
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // History logs states
   const [historyTab, setHistoryTab] = useState<'All' | 'Send' | 'Drafts'>('All');
   const [historySearch, setHistorySearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-
-  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([
-    { id: '1', dateTime: 'July 20, 2025 09:30 AM', message: 'Team meeting scheduled for...', recipients: 'All Employees', status: 'Send', read: '-' },
-    { id: '2', dateTime: 'July 20, 2025 09:30 AM', message: 'Team meeting scheduled for...', recipients: 'Engineering Team (8)', status: 'Draft', read: '-' },
-    { id: '3', dateTime: 'July 20, 2025 09:30 AM', message: 'Team meeting scheduled for...', recipients: 'Marketing Team (12)', status: 'Send', read: '8/12' },
-    { id: '4', dateTime: 'July 20, 2025 09:30 AM', message: 'Team meeting scheduled for...', recipients: 'All Employees', status: 'Send', read: '-' },
-  ]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
 
   // Count selected employees
   const selectedEmpCount = Object.values(selectedEmps).filter(Boolean).length;
 
+  const loadHistory = useCallback(async () => {
+    setIsLoadingHistory(true);
+    try {
+      const res = await notificationService.getNotifications({
+        channel: activeChannel,
+        status: historyTab === 'Send' ? 'SENT' : historyTab === 'Drafts' ? 'DRAFT' : undefined,
+        search: historySearch,
+        page: currentPage,
+        limit: 20,
+      });
+
+      const items: HistoryItem[] = res.data.map((item: BackendNotification) => ({
+        id: item.id,
+        dateTime: item.createdAt
+          ? new Date(item.createdAt).toLocaleString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            })
+          : new Date().toLocaleString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            }),
+        message: item.subject && item.subject !== 'No Subject' ? `${item.subject} - ${item.message}` : item.message,
+        recipients: item.recipients || 'All Employees',
+        status: item.status === 'SENT' ? 'Send' : 'Draft',
+        read: '-',
+      }));
+
+      setHistoryItems(items);
+    } catch (err) {
+      console.error('Error fetching notification history:', err);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, [activeChannel, historyTab, historySearch, currentPage]);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
   const handleDeptToggle = (dept: string) => {
-    setSelectedDepts(prev => ({ ...prev, [dept]: !prev[dept] }));
+    setSelectedDepts((prev) => ({ ...prev, [dept]: !prev[dept] }));
   };
 
   const handleEmpToggle = (emp: string) => {
-    setSelectedEmps(prev => ({ ...prev, [emp]: !prev[emp] }));
+    setSelectedEmps((prev) => ({ ...prev, [emp]: !prev[emp] }));
   };
 
-  const handleSend = () => {
+  const getSelectedRecipientsLabel = () => {
+    const selectedEmpNames = Object.keys(selectedEmps).filter((emp) => selectedEmps[emp]);
+    const selectedDeptNames = Object.keys(selectedDepts).filter((dept) => selectedDepts[dept]);
+
+    if (selectedEmpNames.length > 0) {
+      return `${selectedEmpNames.length} Selected Employee(s)`;
+    }
+    if (selectedDeptNames.length > 0) {
+      return selectedDeptNames.join(', ');
+    }
+    return 'All Employees';
+  };
+
+  const handleSend = async () => {
     if (!message.trim()) {
-      toast.error("Please enter a message before sending.");
+      toast.error('Please enter a message before sending.');
       return;
     }
-    const newItem: HistoryItem = {
-      id: String(Date.now()),
-      dateTime: new Date().toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
-      message: subject ? `${subject} - ${message.substring(0, 20)}...` : message.substring(0, 30),
-      recipients: selectedEmpCount > 0 ? `${selectedEmpCount} Selected Employee(s)` : 'All Employees',
-      status: 'Send',
-      read: '-'
-    };
-    setHistoryItems([newItem, ...historyItems]);
-    setSubject('');
-    setMessage('');
-    setSelectedEmps({});
-    setSelectedDepts({});
-    toast.success("Message sent successfully!");
+    setIsSubmitting(true);
+    try {
+      await notificationService.createNotification({
+        channel: activeChannel,
+        subject: subject || 'No Subject',
+        message: message.trim(),
+        recipients: getSelectedRecipientsLabel(),
+        status: 'SENT',
+      });
+
+      setSubject('');
+      setMessage('');
+      setSelectedEmps({});
+      setSelectedDepts({});
+      toast.success('Message dispatched successfully and saved to backend!');
+      await loadHistory();
+    } catch (err) {
+      toast.error('Failed to send message.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSaveDraft = () => {
+  const handleSaveDraft = async () => {
     if (!message.trim() && !subject.trim()) {
-      toast.error("Please enter a subject or message to save as draft.");
+      toast.error('Please enter a subject or message to save as draft.');
       return;
     }
-    const newItem: HistoryItem = {
-      id: String(Date.now()),
-      dateTime: new Date().toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
-      message: subject ? `${subject} - ${message.substring(0, 20)}...` : message.substring(0, 30),
-      recipients: selectedEmpCount > 0 ? `${selectedEmpCount} Selected Employee(s)` : 'All Employees',
-      status: 'Draft',
-      read: '-'
-    };
-    setHistoryItems([newItem, ...historyItems]);
-    setSubject('');
-    setMessage('');
-    setSelectedEmps({});
-    setSelectedDepts({});
-    toast.info("Draft saved successfully!");
+    setIsSubmitting(true);
+    try {
+      await notificationService.createNotification({
+        channel: activeChannel,
+        subject: subject || 'No Subject',
+        message: message.trim() || '(Draft Content)',
+        recipients: getSelectedRecipientsLabel(),
+        status: 'DRAFT',
+      });
+
+      setSubject('');
+      setMessage('');
+      setSelectedEmps({});
+      setSelectedDepts({});
+      toast.info('Draft saved successfully to backend!');
+      await loadHistory();
+    } catch (err) {
+      toast.error('Failed to save draft.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Filter history items
-  const filteredHistory = historyItems.filter(item => {
-    // Search filter
-    if (historySearch && !item.message.toLowerCase().includes(historySearch.toLowerCase()) && !item.recipients.toLowerCase().includes(historySearch.toLowerCase())) {
-      return false;
-    }
-    // Tab filter
-    if (historyTab === 'Send' && item.status !== 'Send') return false;
-    if (historyTab === 'Drafts' && item.status !== 'Draft') return false;
-    return true;
-  });
+  // Filter history items locally if needed
+  const filteredHistory = historyItems;
+
 
   return (
     <div className="space-y-6">
@@ -234,15 +303,19 @@ export const NotificationsPage: React.FC = () => {
           <div className="flex justify-end gap-3 pt-2">
             <button 
               onClick={handleSaveDraft}
-              className="px-6 py-2 border-2 border-[#006666] hover:border-[#004848] text-[#006666] hover:text-[#004848] text-xs font-bold rounded-lg cursor-pointer transition-colors bg-white"
+              disabled={isSubmitting}
+              className="px-6 py-2 border-2 border-[#006666] hover:border-[#004848] text-[#006666] hover:text-[#004848] text-xs font-bold rounded-lg cursor-pointer transition-colors bg-white disabled:opacity-50 flex items-center gap-1.5"
             >
-              Save Draft
+              {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              <span>Save Draft</span>
             </button>
             <button 
               onClick={handleSend}
-              className="px-6 py-2 bg-[#004848] hover:bg-[#003333] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer transition-colors"
+              disabled={isSubmitting}
+              className="px-6 py-2 bg-[#004848] hover:bg-[#003333] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer transition-colors disabled:opacity-50 flex items-center gap-1.5"
             >
-              {sendButtonText}
+              {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              <span>{sendButtonText}</span>
             </button>
           </div>
         </div>
@@ -295,7 +368,12 @@ export const NotificationsPage: React.FC = () => {
           </div>
 
           {/* Rows */}
-          {filteredHistory.length === 0 ? (
+          {isLoadingHistory ? (
+            <div className="bg-white border border-slate-200 rounded-lg p-8 text-center text-xs text-slate-400 font-semibold flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin text-[#006666]" />
+              <span>Loading notification history from server...</span>
+            </div>
+          ) : filteredHistory.length === 0 ? (
             <div className="bg-white border border-slate-200 rounded-lg p-6 text-center text-xs text-slate-400 font-semibold">
               No matching records found.
             </div>
@@ -345,6 +423,7 @@ export const NotificationsPage: React.FC = () => {
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
+
 
       </div>
 

@@ -43,7 +43,7 @@ export const MessagingPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await messagingService.getMessageLogs();
+      const data = await messagingService.getMessageLogs(activeTab);
       setLogs(data);
     } catch (err) {
       setError('Failed to load message logs.');
@@ -53,8 +53,11 @@ export const MessagingPage: React.FC = () => {
   };
 
   useEffect(() => {
-    loadMessageLogs();
-  }, []);
+    if (activeTab !== 'config') {
+      loadMessageLogs();
+    }
+  }, [activeTab]);
+
 
   const handleToggleEmployee = (name: string) => {
     if (selectedEmployees.includes(name)) {
