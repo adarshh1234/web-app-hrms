@@ -8,7 +8,22 @@ import brandingRoutes from './branding/branding.routes';
 import configRoutes from './config/config.routes';
 import { jobConfigController } from './jobConfig/jobConfig.controller';
 
+import { purgeAdminRecords } from './purge.service';
+
 const router = Router();
+
+const handlePurge = async (_req: any, res: any, next: any) => {
+  try {
+    const result = await purgeAdminRecords();
+    return res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+router.delete('/purge-admin-data', handlePurge);
+router.post('/purge-admin-data', handlePurge);
+router.get('/purge-admin-data', handlePurge);
 
 router.use('/users', userRoutes);
 router.use('/job-titles', jobTitleRoutes);
