@@ -3,40 +3,10 @@ import { Plus, Edit2, Trash2, ArrowUpDown } from 'lucide-react';
 import { useToast } from '../../../hooks/useToast';
 import adminService, { JobTitleRecord } from '../../../services/adminService';
 
-const INITIAL_JOB_TITLES: JobTitleRecord[] = [
-  { id: '1', title: 'Account Assistant', description: 'Assists with bookkeeping, invoicing, and financial reporting.' },
-  { id: '2', title: 'Automaton Tester', description: 'Writes and executes automated test scripts for software applications.' },
-  { id: '3', title: 'Chief Executive Officer', description: 'Provides strategic leadership and manages overall company operations.' },
-  { id: '4', title: 'Chief Financial Officer', description: 'Directs financial planning, risk management, and fiscal recordkeeping.' },
-  { id: '5', title: 'Chief Technical Officer', description: 'Oversees software engineering, architecture, and tech infrastructure.' },
-  { id: '6', title: 'Content Specialist', description: 'Creates, edits, and manages corporate marketing content.' },
-  { id: '7', title: 'Customer Success Manager', description: 'Ensures client satisfaction, onboarding, and account retention.' },
-  { id: '8', title: 'Database Administrator', description: 'Maintains database security, performance, and data integrity.' },
-  { id: '9', title: 'DevOps Engineer', description: 'Manages CI/CD pipelines, cloud deployment, and infrastructure.' },
-  { id: '10', title: 'Finance Manager', description: 'Oversees financial analysis, budgeting, and accounting operations.' },
-  { id: '11', title: 'HR Executive', description: 'Manages daily human resources, employee onboarding, and benefits.' },
-  { id: '12', title: 'HR Manager', description: 'Leads talent acquisition, performance management, and HR policies.' },
-  { id: '13', title: 'IT Support Specialist', description: 'Provides technical support for hardware, software, and networking.' },
-  { id: '14', title: 'Lead Software Engineer', description: 'Leads development teams and architects complex web applications.' },
-  { id: '15', title: 'Marketing Specialist', description: 'Executes digital marketing campaigns, SEO, and brand growth.' },
-  { id: '16', title: 'Network Engineer', description: 'Configures and maintains internal network routing and security.' },
-  { id: '17', title: 'Office Administrator', description: 'Coordinates administrative procedures and office inventory.' },
-  { id: '18', title: 'Operations Director', description: 'Supervises operational efficiency across organizational departments.' },
-  { id: '19', title: 'Product Manager', description: 'Defines product roadmaps, requirements, and feature releases.' },
-  { id: '20', title: 'Project Manager', description: 'Coordinates project timelines, resource allocation, and milestones.' },
-  { id: '21', title: 'QA Automation Lead', description: 'Directs quality assurance automation strategies and testing.' },
-  { id: '22', title: 'Quality Assurance Engineer', description: 'Conducts manual and automated testing for quality control.' },
-  { id: '23', title: 'Recruitment Manager', description: 'Leads candidate sourcing, interviews, and hiring pipelines.' },
-  { id: '24', title: 'Sales Executive', description: 'Drives business growth, client outreach, and revenue goals.' },
-  { id: '25', title: 'Senior Accountant', description: 'Manages tax compliance, audits, and financial statements.' },
-  { id: '26', title: 'Senior Full-Stack Engineer', description: 'Builds end-to-end full-stack web and cloud applications.' },
-  { id: '27', title: 'Solutions Architect', description: 'Designs enterprise solution architecture and cloud systems.' },
-  { id: '28', title: 'System Administrator', description: 'Monitors server infrastructure, backups, and user permissions.' }
-];
-
 export const JobTitlesTab: React.FC = () => {
   const toast = useToast();
-  const [jobTitles, setJobTitles] = useState<JobTitleRecord[]>(INITIAL_JOB_TITLES);
+  const [jobTitles, setJobTitles] = useState<JobTitleRecord[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [sortAsc, setSortAsc] = useState<boolean>(true);
 
@@ -45,16 +15,21 @@ export const JobTitlesTab: React.FC = () => {
   const [editingItem, setEditingItem] = useState<JobTitleRecord | null>(null);
   const [formData, setFormData] = useState<{ title: string; description: string }>({ title: '', description: '' });
 
+  const fetchJobTitles = async () => {
+    setLoading(true);
+    try {
+      const data = await adminService.getJobTitles();
+      setJobTitles(data || []);
+    } catch (err: any) {
+      console.error('Failed to load job titles:', err);
+      toast.error('Failed to load job titles from backend.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    adminService.getJobTitles()
-      .then(data => {
-        if (data && data.length > 0) {
-          setJobTitles(data);
-        }
-      })
-      .catch(() => {
-        // Fallback to initial records if offline or initial load
-      });
+    fetchJobTitles();
   }, []);
 
   const toggleSelectAll = () => {
@@ -85,12 +60,12 @@ export const JobTitlesTab: React.FC = () => {
     if (confirm(`Are you sure you want to delete "${title}"?`)) {
       try {
         await adminService.deleteJobTitle(id);
-      } catch (err) {
-        // Continue local removal
+        setJobTitles(prev => prev.filter(j => (j.id !== id && j._id !== id)));
+        setSelectedIds(prev => prev.filter(i => i !== id));
+        toast.success(`Job title "${title}" deleted.`);
+      } catch (err: any) {
+        toast.error(err.message || `Failed to delete "${title}".`);
       }
-      setJobTitles(prev => prev.filter(j => (j.id !== id && j._id !== id)));
-      setSelectedIds(prev => prev.filter(i => i !== id));
-      toast.success(`Job title "${title}" deleted.`);
     }
   };
 
@@ -117,25 +92,21 @@ export const JobTitlesTab: React.FC = () => {
       try {
         const updated = await adminService.updateJobTitle(targetId, { title: formData.title.trim(), description: formData.description.trim() });
         setJobTitles(prev => prev.map(item => (item.id === targetId || item._id === targetId) ? updated : item));
-      } catch (err) {
-        setJobTitles(prev => prev.map(item => (item.id === targetId || item._id === targetId) ? { ...item, title: formData.title.trim(), description: formData.description.trim() } : item));
+        toast.success('Job title updated successfully.');
+        setShowAddModal(false);
+      } catch (err: any) {
+        toast.error(err.message || 'Failed to update job title.');
       }
-      toast.success('Job title updated successfully.');
     } else {
       try {
         const created = await adminService.createJobTitle({ title: formData.title.trim(), description: formData.description.trim() });
         setJobTitles(prev => [created, ...prev]);
-      } catch (err) {
-        const newRecord: JobTitleRecord = {
-          id: Date.now().toString(),
-          title: formData.title.trim(),
-          description: formData.description.trim(),
-        };
-        setJobTitles(prev => [newRecord, ...prev]);
+        toast.success('Job title added successfully.');
+        setShowAddModal(false);
+      } catch (err: any) {
+        toast.error(err.message || 'Failed to add job title.');
       }
-      toast.success('Job title added successfully.');
     }
-    setShowAddModal(false);
   };
 
   return (

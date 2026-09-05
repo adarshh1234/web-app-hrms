@@ -18,6 +18,14 @@ export class JobTitleRepository {
     return await JobTitleModel.find(filter).sort(sort);
   }
 
+  async count(filter: any = {}): Promise<number> {
+    return await JobTitleModel.countDocuments(filter);
+  }
+
+  async insertMany(items: Partial<IJobTitle>[]): Promise<IJobTitle[]> {
+    return await JobTitleModel.insertMany(items) as unknown as IJobTitle[];
+  }
+
   async update(id: string, data: Partial<IJobTitle>): Promise<IJobTitle | null> {
     return await JobTitleModel.findByIdAndUpdate(id, data, { new: true, runValidators: true });
   }
