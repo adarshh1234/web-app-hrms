@@ -17,8 +17,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ isAuthenticated, onLogout 
 
   useEffect(() => {
     // Initialise branding theme variables
-    const branding = adminService.getBranding();
-    adminService.updateBranding(branding);
+    adminService.getBranding().then((b) => adminService.applyBrandingToDOM(b));
   }, []);
 
   // Close mobile drawer on route change

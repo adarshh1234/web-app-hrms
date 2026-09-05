@@ -17,7 +17,7 @@ export const CorporateBrandingTab: React.FC = () => {
   });
 
   useEffect(() => {
-    setBranding(adminService.getBranding());
+    adminService.getBranding().then((b) => setBranding(b));
   }, []);
 
   const handleApplyBranding = (e: React.FormEvent) => {

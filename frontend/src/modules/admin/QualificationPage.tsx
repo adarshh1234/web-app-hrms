@@ -1,55 +1,106 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, ChevronDown } from 'lucide-react';
+import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
-import Input from '../../components/common/Input';
-import Button from '../../components/common/Button';
+
+type QualTab = 'education' | 'licenses' | 'skills' | 'languages' | 'memberships';
 
 export const QualificationPage: React.FC = () => {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<'info' | 'locations' | 'structure'>('info');
+  const [activeTab, setActiveTab] = useState<QualTab>('education');
 
-  // Tab 1 state
-  const [editEnabled, setEditEnabled] = useState(true);
-
-  // Tab 2 search states
-  const [searchLocName, setSearchLocName] = useState('');
-  const [searchLocCity, setSearchLocCity] = useState('');
-  const [searchLocCountry, setSearchLocCountry] = useState('');
-
-  const [locations, setLocations] = useState([
-    { id: '1', name: 'Canadian Regional HQ', city: 'Ottawa', country: 'Canada', phone: '1-876-267-6999', employees: 1 },
-    { id: '2', name: 'Canadian Regional HQ', city: 'Ottawa', country: 'Canada', phone: '1-876-267-6999', employees: 1 },
+  // Education state
+  const [educationList, setEducationList] = useState([
+    { id: '1', level: "Bachelor's Degree", institute: "University of Toronto", major: "Computer Science", year: "2020" },
+    { id: '2', level: "Master's Degree", institute: "McGill University", major: "Software Engineering", year: "2022" },
   ]);
 
-  const handleDeleteLocation = (id: string) => {
-    if (confirm("Are you sure you want to delete this location?")) {
-      setLocations(locations.filter(l => l.id !== id));
-    }
+  // Licenses state
+  const [licensesList, setLicensesList] = useState([
+    { id: '1', name: "AWS Certified Solutions Architect", issuedBy: "Amazon Web Services", code: "AWS-SA-901" },
+    { id: '2', name: "Project Management Professional (PMP)", issuedBy: "PMI", code: "PMP-88301" },
+  ]);
+
+  // Skills state
+  const [skillsList, setSkillsList] = useState([
+    { id: '1', name: "JavaScript / TypeScript", description: "Frontend and Node.js full-stack development" },
+    { id: '2', name: "React & Next.js", description: "Modern Web UI Architecture" },
+    { id: '3', name: "Database Administration", description: "MongoDB Atlas, PostgreSQL, Redis" },
+  ]);
+
+  // Languages state
+  const [languagesList, setLanguagesList] = useState([
+    { id: '1', name: "English", fluency: "Native / Fluent" },
+    { id: '2', name: "French", fluency: "Professional Working" },
+    { id: '3', name: "Spanish", fluency: "Elementary" },
+  ]);
+
+  // Memberships state
+  const [membershipsList, setMembershipsList] = useState([
+    { id: '1', name: "IEEE Computer Society", type: "Professional Member" },
+    { id: '2', name: "Society for Human Resource Management (SHRM)", type: "Corporate HR Associate" },
+  ]);
+
+  // Modal State
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newSubtitle, setNewSubtitle] = useState('');
+
+  const handleDelete = (id: string, category: QualTab) => {
+    if (!confirm("Are you sure you want to delete this record?")) return;
+    if (category === 'education') setEducationList(prev => prev.filter(x => x.id !== id));
+    if (category === 'licenses') setLicensesList(prev => prev.filter(x => x.id !== id));
+    if (category === 'skills') setSkillsList(prev => prev.filter(x => x.id !== id));
+    if (category === 'languages') setLanguagesList(prev => prev.filter(x => x.id !== id));
+    if (category === 'memberships') setMembershipsList(prev => prev.filter(x => x.id !== id));
+    toast.success("Record deleted successfully.");
   };
 
-  const handleResetLocation = () => {
-    setSearchLocName('');
-    setSearchLocCity('');
-    setSearchLocCountry('');
+  const handleAddRecord = () => {
+    if (!newTitle.trim()) {
+      toast.error("Please fill in the record name.");
+      return;
+    }
+    const id = Date.now().toString();
+    if (activeTab === 'education') {
+      setEducationList([...educationList, { id, level: newTitle, institute: newSubtitle || 'University', major: 'General', year: '2024' }]);
+    } else if (activeTab === 'licenses') {
+      setLicensesList([...licensesList, { id, name: newTitle, issuedBy: newSubtitle || 'Issuing Authority', code: 'LIC-' + id.slice(-4) }]);
+    } else if (activeTab === 'skills') {
+      setSkillsList([...skillsList, { id, name: newTitle, description: newSubtitle || 'Skill description' }]);
+    } else if (activeTab === 'languages') {
+      setLanguagesList([...languagesList, { id, name: newTitle, fluency: newSubtitle || 'Fluent' }]);
+    } else if (activeTab === 'memberships') {
+      setMembershipsList([...membershipsList, { id, name: newTitle, type: newSubtitle || 'Member' }]);
+    }
+    setShowAddModal(false);
+    setNewTitle('');
+    setNewSubtitle('');
+    toast.success("New qualification record added!");
   };
 
   return (
     <div className="space-y-6">
-      
-      {/* 3 Tab pills at the top */}
-      <div className="flex gap-3">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 m-0">Qualifications</h1>
+        <p className="text-sm text-slate-500 mt-1">Configure system qualification standards: Education, Licenses, Skills, Languages, and Memberships.</p>
+      </div>
+
+      {/* 5 Qualification Tab Pills */}
+      <div className="flex flex-wrap gap-2.5 border-b border-slate-200 pb-4">
         {([
-          { id: 'info', label: 'General Information' },
-          { id: 'locations', label: 'Locations' },
-          { id: 'structure', label: 'Structure' }
+          { id: 'education', label: 'Education' },
+          { id: 'licenses', label: 'Licenses' },
+          { id: 'skills', label: 'Skills' },
+          { id: 'languages', label: 'Languages' },
+          { id: 'memberships', label: 'Memberships' }
         ] as const).map(pill => (
           <button
             key={pill.id}
             onClick={() => setActiveTab(pill.id)}
-            className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
               activeTab === pill.id 
-                ? 'bg-blue-50 text-[#0473b8] font-extrabold border border-blue-200 shadow-sm'
-                : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+                ? 'bg-gradient-to-r from-[#002222] via-[#004848] to-[#006666] text-white font-extrabold shadow-sm'
+                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
             }`}
           >
             {pill.label}
@@ -57,329 +108,293 @@ export const QualificationPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Tab Panel 1: General Information (Image 1) */}
-      {activeTab === 'info' && (
+      {/* Tab Panel: Education */}
+      {activeTab === 'education' && (
         <div className="space-y-4">
-          <h2 className="text-sm font-bold text-slate-900 m-0">General Information</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-bold text-slate-900 m-0">Education Levels</h2>
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#004848] hover:bg-[#003333] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add Education</span>
+            </button>
+          </div>
 
-          <div className="bg-white border border-slate-205 rounded-xl p-6 shadow-sm space-y-6">
-            {/* Edit Toggle Switch */}
-            <div className="flex justify-end items-center gap-2">
-              <span className="text-xs font-bold text-slate-700">Edit</span>
-              <button 
-                onClick={() => setEditEnabled(!editEnabled)}
-                className={`w-10 h-5 flex items-center rounded-full p-0.5 duration-300 ease-in-out ${
-                  editEnabled ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
-              >
-                <div className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
-                  editEnabled ? 'translate-x-5' : ''
-                }`} />
-              </button>
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
+            <div className="text-xs font-bold text-slate-500">({educationList.length}) Records Found</div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead className="bg-slate-50 font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-3.5">Level / Degree</th>
+                    <th className="px-6 py-3.5">Institute</th>
+                    <th className="px-6 py-3.5">Major / Specialization</th>
+                    <th className="px-6 py-3.5">Graduation Year</th>
+                    <th className="px-6 py-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-150">
+                  {educationList.map(item => (
+                    <tr key={item.id} className="hover:bg-slate-50/50">
+                      <td className="px-6 py-4 font-semibold text-slate-900">{item.level}</td>
+                      <td className="px-6 py-4 text-slate-600">{item.institute}</td>
+                      <td className="px-6 py-4 text-slate-600">{item.major}</td>
+                      <td className="px-6 py-4 font-mono text-slate-500">{item.year}</td>
+                      <td className="px-6 py-4 text-right space-x-2">
+                        <button onClick={() => toast.info(`Editing ${item.level}`)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full cursor-pointer">
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleDelete(item.id, 'education')} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full cursor-pointer">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-
-            {/* Fields Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs font-bold text-slate-700">
-              
-              {/* Left Form Block (8/12 grid span) */}
-              <div className="lg:col-span-9 space-y-4">
-                
-                {/* Org Name */}
-                <Input
-                  label="Organization Name"
-                  type="text" 
-                  defaultValue="HUREMASO"
-                  disabled={!editEnabled}
-                />
-
-                {/* Reg Number & Tax ID */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    label="Registration Number"
-                    type="text" 
-                    defaultValue="TX-90823812C"
-                    disabled={!editEnabled}
-                  />
-                  <Input
-                    label="Tax ID"
-                    type="text" 
-                    defaultValue="TAX-90823"
-                    disabled={!editEnabled}
-                  />
-                </div>
-
-              </div>
-
-              {/* Right Summary Block (3/12 grid span) */}
-              <div className="lg:col-span-3 flex flex-col justify-end">
-                <span className="block mb-1.5 text-slate-705">Number of Employees</span>
-                <div className="bg-slate-100 border border-slate-200 rounded-xl p-8 flex items-center justify-center text-slate-800 font-extrabold text-2xl h-24">
-                  65
-                </div>
-              </div>
-
-            </div>
-
-            {/* Row 3: Contact */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-bold text-slate-700">
-              <Input
-                label="Phone"
-                type="text" 
-                defaultValue="91-484-259110"
-                disabled={!editEnabled}
-              />
-              <Input
-                label="Fax"
-                type="text" 
-                defaultValue="91-484-259111"
-                disabled={!editEnabled}
-              />
-              <Input
-                label="Email"
-                type="email" 
-                defaultValue="info@huremaso.com"
-                disabled={!editEnabled}
-              />
-            </div>
-
-            {/* Row 4: Address */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-bold text-slate-700">
-              <Input
-                label="Address Street 1"
-                type="text" 
-                defaultValue="324 Kochi Development Zone"
-                disabled={!editEnabled}
-              />
-              <Input
-                label="Address Street 2"
-                type="text" 
-                defaultValue="Infopark Campus"
-                disabled={!editEnabled}
-              />
-              <Input
-                label="City"
-                type="text" 
-                defaultValue="Kochi"
-                disabled={!editEnabled}
-              />
-            </div>
-
-            {/* Row 5: Region */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-bold text-slate-700">
-              <Input
-                label="State/Province"
-                type="text" 
-                defaultValue="Kerala"
-                disabled={!editEnabled}
-              />
-              <Input
-                label="Zip/Postal Code"
-                type="text" 
-                defaultValue="682030"
-                disabled={!editEnabled}
-              />
-              <Input
-                label="Country"
-                type="text" 
-                defaultValue="India"
-                disabled={!editEnabled}
-              />
-            </div>
-
-            {/* Row 6: Description */}
-            <div className="text-xs font-bold text-slate-700">
-              <label className="block mb-1.5 text-slate-750">State/Province</label>
-              <textarea 
-                rows={4}
-                defaultValue="Corporate operations center managing system configuration variables."
-                disabled={!editEnabled}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-slate-900 outline-none font-semibold text-xs resize-none"
-              />
-            </div>
-
           </div>
         </div>
       )}
 
-      {/* Tab Panel 2: Locations (Image 2) */}
-      {activeTab === 'locations' && (
-        <div className="space-y-6">
-          <h2 className="text-sm font-bold text-slate-900 m-0">Locations</h2>
+      {/* Tab Panel: Licenses */}
+      {activeTab === 'licenses' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-bold text-slate-900 m-0">Professional Licenses & Certifications</h2>
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#004848] hover:bg-[#003333] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add License</span>
+            </button>
+          </div>
 
-          {/* Search Filter Card */}
-          <div className="bg-white border border-slate-205 rounded-xl p-5 shadow-sm space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-bold text-slate-705">
-              <Input
-                label="Name"
-                type="text" 
-                value={searchLocName}
-                onChange={(e) => setSearchLocName(e.target.value)}
-              />
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
+            <div className="text-xs font-bold text-slate-500">({licensesList.length}) Records Found</div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead className="bg-slate-50 font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-3.5">License Name</th>
+                    <th className="px-6 py-3.5">Issuing Authority</th>
+                    <th className="px-6 py-3.5">Code / Number</th>
+                    <th className="px-6 py-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-150">
+                  {licensesList.map(item => (
+                    <tr key={item.id} className="hover:bg-slate-50/50">
+                      <td className="px-6 py-4 font-semibold text-slate-900">{item.name}</td>
+                      <td className="px-6 py-4 text-slate-600">{item.issuedBy}</td>
+                      <td className="px-6 py-4 font-mono text-slate-500">{item.code}</td>
+                      <td className="px-6 py-4 text-right space-x-2">
+                        <button onClick={() => toast.info(`Editing ${item.name}`)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full cursor-pointer">
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleDelete(item.id, 'licenses')} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full cursor-pointer">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
 
-              <Input
-                label="City"
-                type="text" 
-                value={searchLocCity}
-                onChange={(e) => setSearchLocCity(e.target.value)}
-              />
+      {/* Tab Panel: Skills */}
+      {activeTab === 'skills' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-bold text-slate-900 m-0">Technical & Professional Skills</h2>
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#004848] hover:bg-[#003333] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add Skill</span>
+            </button>
+          </div>
 
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
+            <div className="text-xs font-bold text-slate-500">({skillsList.length}) Records Found</div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead className="bg-slate-50 font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-3.5">Skill Name</th>
+                    <th className="px-6 py-3.5">Description</th>
+                    <th className="px-6 py-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-150">
+                  {skillsList.map(item => (
+                    <tr key={item.id} className="hover:bg-slate-50/50">
+                      <td className="px-6 py-4 font-semibold text-slate-900">{item.name}</td>
+                      <td className="px-6 py-4 text-slate-600">{item.description}</td>
+                      <td className="px-6 py-4 text-right space-x-2">
+                        <button onClick={() => toast.info(`Editing ${item.name}`)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full cursor-pointer">
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleDelete(item.id, 'skills')} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full cursor-pointer">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab Panel: Languages */}
+      {activeTab === 'languages' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-bold text-slate-900 m-0">Languages</h2>
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#004848] hover:bg-[#003333] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add Language</span>
+            </button>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
+            <div className="text-xs font-bold text-slate-500">({languagesList.length}) Records Found</div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead className="bg-slate-50 font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-3.5">Language</th>
+                    <th className="px-6 py-3.5">Fluency Rating</th>
+                    <th className="px-6 py-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-150">
+                  {languagesList.map(item => (
+                    <tr key={item.id} className="hover:bg-slate-50/50">
+                      <td className="px-6 py-4 font-semibold text-slate-900">{item.name}</td>
+                      <td className="px-6 py-4 text-slate-600">{item.fluency}</td>
+                      <td className="px-6 py-4 text-right space-x-2">
+                        <button onClick={() => toast.info(`Editing ${item.name}`)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full cursor-pointer">
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleDelete(item.id, 'languages')} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full cursor-pointer">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab Panel: Memberships */}
+      {activeTab === 'memberships' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-bold text-slate-900 m-0">Corporate & Professional Memberships</h2>
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#004848] hover:bg-[#003333] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add Membership</span>
+            </button>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
+            <div className="text-xs font-bold text-slate-500">({membershipsList.length}) Records Found</div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead className="bg-slate-50 font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-3.5">Organization / Association</th>
+                    <th className="px-6 py-3.5">Membership Type</th>
+                    <th className="px-6 py-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-150">
+                  {membershipsList.map(item => (
+                    <tr key={item.id} className="hover:bg-slate-50/50">
+                      <td className="px-6 py-4 font-semibold text-slate-900">{item.name}</td>
+                      <td className="px-6 py-4 text-slate-600">{item.type}</td>
+                      <td className="px-6 py-4 text-right space-x-2">
+                        <button onClick={() => toast.info(`Editing ${item.name}`)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full cursor-pointer">
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleDelete(item.id, 'memberships')} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full cursor-pointer">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+            <h3 className="text-base font-bold text-slate-900 capitalize">Add {activeTab} Record</h3>
+            <div className="space-y-3 text-xs">
               <div>
-                <label className="block mb-1.5">Country</label>
-                <div className="relative flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white">
-                  <select
-                    value={searchLocCountry}
-                    onChange={(e) => setSearchLocCountry(e.target.value)}
-                    className="w-full bg-transparent px-3 py-2 text-slate-900 outline-none appearance-none pr-9 text-xs font-semibold"
-                  >
-                    <option value="">Select Country</option>
-                    <option value="Canada">Canada</option>
-                    <option value="India">India</option>
-                  </select>
-                  <div className="absolute right-0 top-0 bottom-0 w-8 bg-slate-100 border-l border-slate-200 flex items-center justify-center pointer-events-none">
-                    <ChevronDown className="h-3.5 w-3.5 text-slate-800" />
-                  </div>
-                </div>
+                <label className="block mb-1 font-bold text-slate-700">Name / Title</label>
+                <input 
+                  type="text" 
+                  value={newTitle}
+                  onChange={e => setNewTitle(e.target.value)}
+                  placeholder="e.g. Master of Business Administration"
+                  className="w-full rounded-lg border border-slate-200 p-2.5 outline-none font-semibold"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 font-bold text-slate-700">Secondary Info / Detail</label>
+                <input 
+                  type="text" 
+                  value={newSubtitle}
+                  onChange={e => setNewSubtitle(e.target.value)}
+                  placeholder="e.g. Institution, Authority, or Description"
+                  className="w-full rounded-lg border border-slate-200 p-2.5 outline-none font-semibold"
+                />
               </div>
             </div>
-
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex justify-end gap-3 pt-3">
               <button 
-                onClick={handleResetLocation}
-                className="px-6 py-2 border border-[#0473b8] text-[#0473b8] text-xs font-bold rounded-lg hover:bg-blue-50/50 transition-all bg-white"
+                onClick={() => setShowAddModal(false)}
+                className="px-4 py-2 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
               >
-                Reset
+                Cancel
               </button>
-              <Button 
-                variant="primary"
-                size="md"
-                className="px-6"
-                onClick={() => toast.info("Searching locations")}
-              >
-                Search
-              </Button>
-            </div>
-          </div>
-
-          {/* Table content */}
-          <div className="bg-slate-100 border border-slate-200 rounded-xl p-5 space-y-3">
-            
-            {/* Header info */}
-            <div className="flex justify-between items-center pb-1">
-              <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
               <button 
-                onClick={() => toast.info("Add new location")}
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors cursor-pointer"
+                onClick={handleAddRecord}
+                className="px-4 py-2 bg-[#004848] text-white rounded-lg text-xs font-bold hover:bg-[#003333] cursor-pointer"
               >
-                <Plus className="h-3 w-3" />
-                <span>Add</span>
+                Save Qualification
               </button>
             </div>
-
-            {/* Grid Column Headers */}
-            <div className="grid grid-cols-6 px-4 py-1 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-              <span>Name</span>
-              <span>City</span>
-              <span>Country</span>
-              <span>Phone</span>
-              <span>No of Employees</span>
-              <span className="text-right">Actions</span>
-            </div>
-
-            {/* List Rows */}
-            <div className="space-y-1.5">
-              {locations.map((loc) => (
-                <div 
-                  key={loc.id}
-                  className="grid grid-cols-6 items-center bg-white border border-slate-200 rounded-lg py-2.5 px-4 shadow-sm text-xs font-bold text-slate-800"
-                >
-                  <span>{loc.name}</span>
-                  <span className="text-slate-500 font-semibold">{loc.city}</span>
-                  <span className="text-slate-500 font-semibold">{loc.country}</span>
-                  <span className="text-slate-500 font-semibold">{loc.phone}</span>
-                  <span>{loc.employees}</span>
-                  
-                  <div className="flex justify-end gap-2.5">
-                    <button onClick={() => toast.info(`Edit location #${loc.id}`)} className="p-1 text-slate-400 hover:text-blue-600">
-                      <Edit2 className="h-3.5 w-3.5" />
-                    </button>
-                    <button onClick={() => handleDeleteLocation(loc.id)} className="p-1 text-slate-400 hover:text-rose-600">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-          </div>
-
-        </div>
-      )}
-
-      {/* Tab Panel 3: Structure (Image 3) */}
-      {activeTab === 'structure' && (
-        <div className="space-y-4">
-          <h2 className="text-sm font-bold text-slate-900 m-0">Organization Structure</h2>
-
-          <div className="bg-white border border-slate-205 rounded-xl p-6 shadow-sm relative min-h-[350px]">
-            {/* Header edit toggle aligned top right */}
-            <div className="absolute top-6 right-6 flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-700">Edit</span>
-              <button 
-                onClick={() => setEditEnabled(!editEnabled)}
-                className={`w-10 h-5 flex items-center rounded-full p-0.5 duration-300 ease-in-out ${
-                  editEnabled ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
-              >
-                <div className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
-                  editEnabled ? 'translate-x-5' : ''
-                }`} />
-              </button>
-            </div>
-
-            {/* Tree View Diagram Layout */}
-            <div className="relative pl-0 pt-8 pb-4 max-w-2xl">
-              {/* Vertical line starting from the root row down to the last child's horizontal connector */}
-              <div className="absolute left-[24px] top-[48px] bottom-[24px] w-[2px] bg-[#0473b8]"></div>
-              
-              {/* Root Node */}
-              <div className="relative h-8 flex items-center mb-6 pl-16">
-                {/* Horizontal connector from vertical line to dot */}
-                <span className="absolute left-[24px] w-8 h-[2px] bg-[#0473b8]"></span>
-                {/* Dot touching HUREMASO text */}
-                <span className="absolute left-[52px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[#0473b8] border-2 border-white shadow-xs z-10"></span>
-                <span className="pl-4 text-sm font-extrabold text-[#0473b8] uppercase tracking-wide">HUREMASO</span>
-              </div>
-
-              {/* Child Nodes */}
-              <div className="space-y-3">
-                {[
-                  'Administration',
-                  'Engineering',
-                  'Sales & Marketing',
-                  'Client Services',
-                  'Human Resources'
-                ].map((dept) => (
-                  <div key={dept} className="relative h-12 flex items-center pl-16">
-                    {/* Connecting horizontal line from vertical line to the box */}
-                    <span className="absolute left-[24px] w-10 h-[2px] bg-[#0473b8]"></span>
-                    {/* Dot on the horizontal line, touching the left side of the box */}
-                    <span className="absolute left-[58px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[#0473b8] border-2 border-white z-10"></span>
-                    
-                    {/* Flat Department Card block exactly like original Figma */}
-                    <div className="w-full max-w-lg bg-[#e2e4e7] h-10 flex items-center px-4 text-slate-800 text-xs font-bold rounded-lg shadow-none select-none hover:bg-slate-300/80 transition-colors">
-                      {dept}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-            </div>
-
           </div>
         </div>
       )}
-
     </div>
   );
 };
+
 export default QualificationPage;

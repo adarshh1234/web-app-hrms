@@ -5,6 +5,7 @@ import { useToast } from '../../hooks/useToast';
 import { LocationPage } from '../employees/LocationPage';
 import { DepartmentPage } from '../employees/DepartmentPage';
 import OrganizationTab from './components/OrganizationTab';
+import JobTitlesTab from './components/JobTitlesTab';
 
 type JobTabType = 
   | 'job' 
@@ -105,27 +106,7 @@ export const JobConfigPage: React.FC = () => {
       </div>
 
       {/* Tab Panel 1: Jobs */}
-      {activeTab === 'job' && (
-        <div className="space-y-4">
-          <h2 className="text-sm font-bold text-slate-900 m-0">Job Titles</h2>
-          
-          <div className="bg-slate-100 border border-slate-200 rounded-xl p-5 space-y-3">
-            <div className="flex justify-between items-center pb-1">
-              <span className="text-[10px] font-bold text-slate-500">(0) Records Found</span>
-              <button 
-                onClick={() => toast.info("Add job title")}
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors"
-              >
-                <Plus className="h-3 w-3" />
-                <span>Add</span>
-              </button>
-            </div>
-            <div className="bg-white rounded-lg p-8 border border-slate-200 text-center text-xs font-bold text-slate-400">
-              No Job Titles defined.
-            </div>
-          </div>
-        </div>
-      )}
+      {activeTab === 'job' && <JobTitlesTab />}
 
       {/* Tab Panel 2: Pay Grades */}
       {activeTab === 'grades' && (

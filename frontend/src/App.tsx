@@ -61,6 +61,7 @@ const UserManagementPage = lazy(() => import('./modules/admin/UserManagementPage
 const JobConfigPage = lazy(() => import('./modules/admin/JobConfigPage'));
 const ConfigurationPage = lazy(() => import('./modules/admin/ConfigurationPage'));
 const QualificationPage = lazy(() => import('./modules/admin/QualificationPage'));
+const OrganizationPage = lazy(() => import('./modules/admin/OrganizationPage'));
 const NationalitiesPage = lazy(() => import('./modules/admin/NationalitiesPage'));
 const BrandingPage = lazy(() => import('./modules/admin/BrandingPage'));
 const SupportPage = lazy(() => import('./modules/support/SupportPage'));
@@ -235,7 +236,7 @@ export const App: React.FC = () => {
             <Route path="/admin" element={<Navigate to="/admin/user-management" replace />} />
             <Route path="/admin/user-management" element={<UserManagementPage />} />
             <Route path="/admin/job" element={<JobConfigPage />} />
-            <Route path="/admin/organization" element={<AdminPage />} />
+            <Route path="/admin/organization" element={<OrganizationPage />} />
             <Route path="/admin/qualification" element={<QualificationPage />} />
             <Route path="/admin/nationalities" element={<NationalitiesPage />} />
             <Route path="/admin/branding" element={<BrandingPage />} />
