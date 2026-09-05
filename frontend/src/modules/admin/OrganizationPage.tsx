@@ -1,33 +1,88 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Network } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
+import adminService, { OrganizationData } from '../../services/adminService';
 
 export const OrganizationPage: React.FC = () => {
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<'info' | 'locations' | 'structure'>('info');
 
-  // Tab 1 state
+  // Org state
+  const [orgData, setOrgData] = useState<OrganizationData>({
+    name: 'HUREMASO',
+    regNumber: 'TX-90823812C',
+    taxId: 'TAX-884920',
+    phone: '1-876-267-6999',
+    fax: '1-876-267-7000',
+    email: 'info@huremaso.org',
+    addressStreet1: '324 Kochi Development Zone',
+    addressStreet2: 'Suite 400',
+    city: 'Kochi',
+    state: 'Kerala',
+    zipCode: '682030',
+    country: 'India',
+    notes: 'Primary corporate headquarters and offshore software engineering development center.',
+    locations: [],
+  });
+
   const [editEnabled, setEditEnabled] = useState(true);
 
-  // Tab 2 search states & location data
+  // Locations search states
   const [searchLocName, setSearchLocName] = useState('');
   const [searchLocCity, setSearchLocCity] = useState('');
   const [searchLocCountry, setSearchLocCountry] = useState('');
 
-  const [locations, setLocations] = useState([
-    { id: '1', name: 'Canadian Regional HQ', city: 'Ottawa', country: 'Canada', phone: '1-876-267-6999', employees: 1 },
-    { id: '2', name: 'Kochi Development Center', city: 'Kochi', country: 'India', phone: '91-484-259110', employees: 5 },
-  ]);
-
   const [showAddModal, setShowAddModal] = useState(false);
   const [newLoc, setNewLoc] = useState({ name: '', city: '', country: 'Canada', phone: '', employees: 1 });
 
-  const handleDeleteLocation = (id: string) => {
-    if (confirm("Are you sure you want to delete this location?")) {
-      setLocations(locations.filter(l => l.id !== id));
-      toast.success("Location removed successfully.");
+  const loadOrg = async () => {
+    try {
+      const data = await adminService.getOrganization();
+      if (data) setOrgData(data);
+    } catch (err) {
+      toast.error('Failed to load organization data.');
+    }
+  };
+
+  useEffect(() => {
+    loadOrg();
+  }, []);
+
+  const handleSaveGeneralInfo = async () => {
+    try {
+      const updated = await adminService.updateOrganization({
+        name: orgData.name,
+        regNumber: orgData.regNumber,
+        taxId: orgData.taxId,
+        phone: orgData.phone,
+        fax: orgData.fax,
+        email: orgData.email,
+        addressStreet1: orgData.addressStreet1,
+        addressStreet2: orgData.addressStreet2,
+        city: orgData.city,
+        state: orgData.state,
+        zipCode: orgData.zipCode,
+        country: orgData.country,
+        notes: orgData.notes,
+      });
+      setOrgData(updated);
+      toast.success('Organization General Information updated successfully!');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update organization profile.');
+    }
+  };
+
+  const handleDeleteLocation = async (id: string) => {
+    if (confirm('Are you sure you want to delete this location?')) {
+      try {
+        const updated = await adminService.removeOrganizationLocation(id);
+        setOrgData(updated);
+        toast.success('Location removed successfully.');
+      } catch (err: any) {
+        toast.error('Failed to remove location.');
+      }
     }
   };
 
@@ -37,22 +92,23 @@ export const OrganizationPage: React.FC = () => {
     setSearchLocCountry('');
   };
 
-  const handleAddLocation = () => {
+  const handleAddLocation = async () => {
     if (!newLoc.name || !newLoc.city) {
-      toast.error("Location name and city are required.");
+      toast.error('Location name and city are required.');
       return;
     }
-    const created = {
-      id: Date.now().toString(),
-      ...newLoc
-    };
-    setLocations([...locations, created]);
-    setShowAddModal(false);
-    setNewLoc({ name: '', city: '', country: 'Canada', phone: '', employees: 1 });
-    toast.success("Location added successfully.");
+    try {
+      const updated = await adminService.addOrganizationLocation(newLoc);
+      setOrgData(updated);
+      setShowAddModal(false);
+      setNewLoc({ name: '', city: '', country: 'Canada', phone: '', employees: 1 });
+      toast.success('Location added successfully.');
+    } catch (err: any) {
+      toast.error('Failed to add location.');
+    }
   };
 
-  const filteredLocations = locations.filter(loc => {
+  const filteredLocations = (orgData.locations || []).filter(loc => {
     const matchName = !searchLocName || loc.name.toLowerCase().includes(searchLocName.toLowerCase());
     const matchCity = !searchLocCity || loc.city.toLowerCase().includes(searchLocCity.toLowerCase());
     const matchCountry = !searchLocCountry || loc.country.toLowerCase().includes(searchLocCountry.toLowerCase());
@@ -110,12 +166,12 @@ export const OrganizationPage: React.FC = () => {
 
             {/* Fields Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs font-bold text-slate-700">
-              {/* Left Form Block */}
               <div className="lg:col-span-9 space-y-4">
                 <Input
                   label="Organization Name"
                   type="text" 
-                  defaultValue="HUREMASO"
+                  value={orgData.name || ''}
+                  onChange={e => setOrgData({ ...orgData, name: e.target.value })}
                   disabled={!editEnabled}
                 />
 
@@ -123,13 +179,15 @@ export const OrganizationPage: React.FC = () => {
                   <Input
                     label="Registration Number"
                     type="text" 
-                    defaultValue="TX-90823812C"
+                    value={orgData.regNumber || ''}
+                    onChange={e => setOrgData({ ...orgData, regNumber: e.target.value })}
                     disabled={!editEnabled}
                   />
                   <Input
                     label="Tax ID"
                     type="text" 
-                    defaultValue="TAX-884920"
+                    value={orgData.taxId || ''}
+                    onChange={e => setOrgData({ ...orgData, taxId: e.target.value })}
                     disabled={!editEnabled}
                   />
                 </div>
@@ -138,19 +196,22 @@ export const OrganizationPage: React.FC = () => {
                   <Input
                     label="Phone"
                     type="text" 
-                    defaultValue="1-876-267-6999"
+                    value={orgData.phone || ''}
+                    onChange={e => setOrgData({ ...orgData, phone: e.target.value })}
                     disabled={!editEnabled}
                   />
                   <Input
                     label="Fax"
                     type="text" 
-                    defaultValue="1-876-267-7000"
+                    value={orgData.fax || ''}
+                    onChange={e => setOrgData({ ...orgData, fax: e.target.value })}
                     disabled={!editEnabled}
                   />
                   <Input
                     label="Email"
                     type="email" 
-                    defaultValue="info@huremaso.org"
+                    value={orgData.email || ''}
+                    onChange={e => setOrgData({ ...orgData, email: e.target.value })}
                     disabled={!editEnabled}
                   />
                 </div>
@@ -158,14 +219,16 @@ export const OrganizationPage: React.FC = () => {
                 <Input
                   label="Address Street 1"
                   type="text" 
-                  defaultValue="324 Kochi Development Zone"
+                  value={orgData.addressStreet1 || ''}
+                  onChange={e => setOrgData({ ...orgData, addressStreet1: e.target.value })}
                   disabled={!editEnabled}
                 />
 
                 <Input
                   label="Address Street 2"
                   type="text" 
-                  defaultValue="Suite 400"
+                  value={orgData.addressStreet2 || ''}
+                  onChange={e => setOrgData({ ...orgData, addressStreet2: e.target.value })}
                   disabled={!editEnabled}
                 />
 
@@ -173,19 +236,22 @@ export const OrganizationPage: React.FC = () => {
                   <Input
                     label="City"
                     type="text" 
-                    defaultValue="Kochi"
+                    value={orgData.city || ''}
+                    onChange={e => setOrgData({ ...orgData, city: e.target.value })}
                     disabled={!editEnabled}
                   />
                   <Input
                     label="State/Province"
                     type="text" 
-                    defaultValue="Kerala"
+                    value={orgData.state || ''}
+                    onChange={e => setOrgData({ ...orgData, state: e.target.value })}
                     disabled={!editEnabled}
                   />
                   <Input
                     label="Zip/Postal Code"
                     type="text" 
-                    defaultValue="682030"
+                    value={orgData.zipCode || ''}
+                    onChange={e => setOrgData({ ...orgData, zipCode: e.target.value })}
                     disabled={!editEnabled}
                   />
                 </div>
@@ -194,7 +260,8 @@ export const OrganizationPage: React.FC = () => {
                   <label className="block mb-1.5 font-bold text-slate-700">Country</label>
                   <select 
                     disabled={!editEnabled}
-                    defaultValue="India"
+                    value={orgData.country || 'India'}
+                    onChange={e => setOrgData({ ...orgData, country: e.target.value })}
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-900 bg-white font-semibold text-xs outline-none disabled:bg-slate-50"
                   >
                     <option value="Canada">Canada</option>
@@ -207,7 +274,8 @@ export const OrganizationPage: React.FC = () => {
                   <label className="block mb-1.5 font-bold text-slate-700">Notes</label>
                   <textarea
                     rows={3}
-                    defaultValue="Primary corporate headquarters and offshore software engineering development center."
+                    value={orgData.notes || ''}
+                    onChange={e => setOrgData({ ...orgData, notes: e.target.value })}
                     disabled={!editEnabled}
                     className="w-full rounded-lg border border-slate-200 p-3 text-slate-900 bg-white font-semibold text-xs outline-none disabled:bg-slate-50 resize-none"
                   />
@@ -225,8 +293,8 @@ export const OrganizationPage: React.FC = () => {
                 {editEnabled && (
                   <div className="pt-2">
                     <Button 
-                      onClick={() => toast.success("Organization General Information updated!")}
-                      className="w-full bg-[#004848] hover:bg-[#003333] text-white"
+                      onClick={handleSaveGeneralInfo}
+                      className="w-full bg-[#004848] hover:bg-[#003333] text-white cursor-pointer"
                     >
                       Save Changes
                     </Button>
@@ -276,6 +344,7 @@ export const OrganizationPage: React.FC = () => {
                   <option value="">All Countries</option>
                   <option value="Canada">Canada</option>
                   <option value="India">India</option>
+                  <option value="United States">United States</option>
                 </select>
               </div>
             </div>
@@ -323,24 +392,27 @@ export const OrganizationPage: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-slate-150">
                     {filteredLocations.length > 0 ? (
-                      filteredLocations.map((loc) => (
-                        <tr key={loc.id} className="hover:bg-slate-50/50">
-                          <td className="px-6 py-4 font-semibold text-slate-900">{loc.name}</td>
-                          <td className="px-6 py-4 text-slate-600">{loc.city}</td>
-                          <td className="px-6 py-4 text-slate-600">{loc.country}</td>
-                          <td className="px-6 py-4 text-slate-500 font-mono">{loc.phone}</td>
-                          <td className="px-6 py-4 font-bold text-[#004848]">{loc.employees}</td>
-                          <td className="px-6 py-4 text-right space-x-2">
-                            <button 
-                              onClick={() => handleDeleteLocation(loc.id)}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
-                              title="Delete Location"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
+                      filteredLocations.map((loc) => {
+                        const locId = loc.id || loc._id || loc.name;
+                        return (
+                          <tr key={locId} className="hover:bg-slate-50/50">
+                            <td className="px-6 py-4 font-semibold text-slate-900">{loc.name}</td>
+                            <td className="px-6 py-4 text-slate-600">{loc.city}</td>
+                            <td className="px-6 py-4 text-slate-600">{loc.country}</td>
+                            <td className="px-6 py-4 text-slate-500 font-mono">{loc.phone || 'N/A'}</td>
+                            <td className="px-6 py-4 font-bold text-[#004848]">{loc.employees || 1}</td>
+                            <td className="px-6 py-4 text-right space-x-2">
+                              <button 
+                                onClick={() => handleDeleteLocation(locId)}
+                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
+                                title="Delete Location"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
                     ) : (
                       <tr>
                         <td colSpan={6} className="px-6 py-8 text-center text-slate-400 font-medium">
@@ -372,7 +444,7 @@ export const OrganizationPage: React.FC = () => {
           <div className="p-6 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 space-y-4">
             <div className="flex items-center gap-2.5 text-[#004848] font-bold text-sm">
               <Network className="h-5 w-5" />
-              <span>HUREMASO (Corporate Parent Headquarters)</span>
+              <span>{orgData.name || 'HUREMASO'} (Corporate Parent Headquarters)</span>
             </div>
             <div className="pl-6 border-l-2 border-[#004848]/30 space-y-3">
               <div className="flex items-center gap-2">
@@ -407,7 +479,7 @@ export const OrganizationPage: React.FC = () => {
             <h3 className="text-base font-bold text-slate-900">Add New Location</h3>
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block mb-1 font-bold text-slate-700">Location Name</label>
+                <label className="block mb-1 font-bold text-slate-700">Location Name *</label>
                 <input 
                   type="text" 
                   value={newLoc.name}
@@ -417,7 +489,7 @@ export const OrganizationPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block mb-1 font-bold text-slate-700">City</label>
+                <label className="block mb-1 font-bold text-slate-700">City *</label>
                 <input 
                   type="text" 
                   value={newLoc.city}
@@ -427,7 +499,7 @@ export const OrganizationPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block mb-1 font-bold text-slate-700">Country</label>
+                <label className="block mb-1 font-bold text-slate-700">Country *</label>
                 <input 
                   type="text" 
                   value={newLoc.country}

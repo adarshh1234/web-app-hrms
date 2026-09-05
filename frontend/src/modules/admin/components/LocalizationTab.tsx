@@ -1,12 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useToast } from '../../../hooks/useToast';
 import Button from '../../../components/common/Button';
+import adminService from '../../../services/adminService';
 
 export const LocalizationTab: React.FC = () => {
   const toast = useToast();
   const [localLang, setLocalLang] = useState('English (US)');
   const [localDateFormat, setLocalDateFormat] = useState('YYYY-MM-DD');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    adminService.getConfiguration()
+      .then((cfg) => {
+        if (cfg?.localization) {
+          if (cfg.localization.language) setLocalLang(cfg.localization.language);
+          if (cfg.localization.dateFormat) setLocalDateFormat(cfg.localization.dateFormat);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      await adminService.updateConfiguration({
+        localization: {
+          language: localLang,
+          dateFormat: localDateFormat,
+        },
+      });
+      toast.success("Localization settings saved!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save localization settings");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -60,9 +90,10 @@ export const LocalizationTab: React.FC = () => {
             variant="primary"
             size="md"
             className="px-6"
-            onClick={() => toast.success("Localization settings saved!")}
+            onClick={handleSave}
+            disabled={saving}
           >
-            Save
+            {saving ? 'Saving...' : 'Save'}
           </Button>
         </div>
 

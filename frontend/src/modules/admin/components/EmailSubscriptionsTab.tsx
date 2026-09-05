@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserPlus } from 'lucide-react';
 import { useToast } from '../../../hooks/useToast';
+import adminService from '../../../services/adminService';
 
 export const EmailSubscriptionsTab: React.FC = () => {
   const toast = useToast();
@@ -12,8 +13,37 @@ export const EmailSubscriptionsTab: React.FC = () => {
     { id: '5', type: 'Leave Rejections', enabled: true },
   ]);
 
-  const toggleSubscription = (id: string) => {
-    setSubscriptions(subscriptions.map(s => s.id === id ? { ...s, enabled: !s.enabled } : s));
+  useEffect(() => {
+    adminService.getConfiguration()
+      .then((cfg) => {
+        if (cfg?.emailSubscriptions) {
+          setSubscriptions((prev) =>
+            prev.map((sub) => {
+              return sub.type in cfg.emailSubscriptions
+                ? { ...sub, enabled: !!cfg.emailSubscriptions[sub.type] }
+                : sub;
+            })
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const toggleSubscription = async (id: string) => {
+    const updated = subscriptions.map((s) => (s.id === id ? { ...s, enabled: !s.enabled } : s));
+    setSubscriptions(updated);
+    
+    const subMap: Record<string, boolean> = {};
+    updated.forEach((s) => {
+      subMap[s.type] = s.enabled;
+    });
+
+    try {
+      await adminService.updateConfiguration({ emailSubscriptions: subMap });
+      toast.success("Subscription setting updated");
+    } catch (err: any) {
+      toast.error("Failed to update subscription");
+    }
   };
 
   return (

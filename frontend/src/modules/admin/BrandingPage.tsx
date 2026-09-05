@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '../../hooks/useToast';
+import adminService from '../../services/adminService';
 
 export const BrandingPage: React.FC = () => {
   const toast = useToast();
@@ -10,11 +11,38 @@ export const BrandingPage: React.FC = () => {
   const [gradient1, setGradient1] = useState('#002222');
   const [gradient2, setGradient2] = useState('#007878');
 
-  // File labels
   const [logoFile, setLogoFile] = useState('No file selected');
   const [bannerFile, setBannerFile] = useState('No file selected');
   const [loginBannerFile, setLoginBannerFile] = useState('No file selected');
   const [socialMediaToggled, setSocialMediaToggled] = useState(true);
+
+  useEffect(() => {
+    adminService.getBranding().then((b) => {
+      if (b.primaryColor) setPrimaryColor(b.primaryColor);
+      if (b.secondaryColor) setSecondaryColor(b.secondaryColor);
+      if (b.primaryFontColor) setPrimaryFontColor(b.primaryFontColor);
+      if (b.secondaryFontColor) setSecondaryFontColor(b.secondaryFontColor);
+      if (b.primaryGradientColor1) setGradient1(b.primaryGradientColor1);
+      if (b.primaryGradientColor2) setGradient2(b.primaryGradientColor2);
+    });
+  }, []);
+
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    try {
+      await adminService.updateBranding({
+        primaryColor,
+        secondaryColor,
+        primaryFontColor,
+        secondaryFontColor,
+        primaryGradientColor1: gradient1,
+        primaryGradientColor2: gradient2,
+      });
+      toast.success('Corporate Branding updated & persisted successfully!');
+    } catch (err) {
+      toast.error('Failed to update corporate branding.');
+    }
+  };
 
   const handleReset = () => {
     setPrimaryColor('#004848');
@@ -26,6 +54,15 @@ export const BrandingPage: React.FC = () => {
     setLogoFile('No file selected');
     setBannerFile('No file selected');
     setLoginBannerFile('No file selected');
+    adminService.updateBranding({
+      primaryColor: '#004848',
+      secondaryColor: '#f1f5f9',
+      primaryFontColor: '#ffffff',
+      secondaryFontColor: '#1e293b',
+      primaryGradientColor1: '#002222',
+      primaryGradientColor2: '#007878',
+    });
+    toast.info('Branding reset to default theme.');
   };
 
   return (
@@ -33,10 +70,10 @@ export const BrandingPage: React.FC = () => {
       <h2 className="text-sm font-bold text-slate-900 m-0">Corporate Branding</h2>
 
       {/* Main Form container card */}
-      <div className="bg-white border border-slate-205 rounded-xl p-6 shadow-sm space-y-6">
+      <form onSubmit={handleSave} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-6">
         
         {/* Colors Inputs Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-bold text-slate-705">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-bold text-slate-700">
           
           {/* Column 1 */}
           <div className="space-y-4">
@@ -51,7 +88,7 @@ export const BrandingPage: React.FC = () => {
                 />
                 <input 
                   type="color" 
-                  value={primaryColor.startsWith('#') ? primaryColor : '#e0e0e0'}
+                  value={primaryColor.startsWith('#') ? primaryColor : '#004848'}
                   onChange={(e) => setPrimaryColor(e.target.value)}
                   className="w-10 h-8 border border-slate-200 rounded-md cursor-pointer bg-transparent"
                 />
@@ -69,7 +106,7 @@ export const BrandingPage: React.FC = () => {
                 />
                 <input 
                   type="color" 
-                  value={primaryFontColor.startsWith('#') ? primaryFontColor : '#e0e0e0'}
+                  value={primaryFontColor.startsWith('#') ? primaryFontColor : '#ffffff'}
                   onChange={(e) => setPrimaryFontColor(e.target.value)}
                   className="w-10 h-8 border border-slate-200 rounded-md cursor-pointer bg-transparent"
                 />
@@ -87,7 +124,7 @@ export const BrandingPage: React.FC = () => {
                 />
                 <input 
                   type="color" 
-                  value={gradient1.startsWith('#') ? gradient1 : '#e0e0e0'}
+                  value={gradient1.startsWith('#') ? gradient1 : '#002222'}
                   onChange={(e) => setGradient1(e.target.value)}
                   className="w-10 h-8 border border-slate-200 rounded-md cursor-pointer bg-transparent"
                 />
@@ -108,7 +145,7 @@ export const BrandingPage: React.FC = () => {
                 />
                 <input 
                   type="color" 
-                  value={secondaryColor.startsWith('#') ? secondaryColor : '#e0e0e0'}
+                  value={secondaryColor.startsWith('#') ? secondaryColor : '#f1f5f9'}
                   onChange={(e) => setSecondaryColor(e.target.value)}
                   className="w-10 h-8 border border-slate-200 rounded-md cursor-pointer bg-transparent"
                 />
@@ -126,7 +163,7 @@ export const BrandingPage: React.FC = () => {
                 />
                 <input 
                   type="color" 
-                  value={secondaryFontColor.startsWith('#') ? secondaryFontColor : '#e0e0e0'}
+                  value={secondaryFontColor.startsWith('#') ? secondaryFontColor : '#1e293b'}
                   onChange={(e) => setSecondaryFontColor(e.target.value)}
                   className="w-10 h-8 border border-slate-200 rounded-md cursor-pointer bg-transparent"
                 />
@@ -144,116 +181,34 @@ export const BrandingPage: React.FC = () => {
                 />
                 <input 
                   type="color" 
-                  value={gradient2.startsWith('#') ? gradient2 : '#e0e0e0'}
+                  value={gradient2.startsWith('#') ? gradient2 : '#007878'}
                   onChange={(e) => setGradient2(e.target.value)}
                   className="w-10 h-8 border border-slate-200 rounded-md cursor-pointer bg-transparent"
                 />
               </div>
             </div>
           </div>
-
         </div>
 
-        {/* Separator line */}
-        <div className="border-t border-slate-100 my-6"></div>
-
-        {/* File upload inputs Section matching Image 5 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-bold text-slate-705">
-          {/* Client Logo */}
-          <div className="space-y-2">
-            <label className="block">Client Logo</label>
-            <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white">
-              <button 
-                onClick={() => setLogoFile('logo.png')}
-                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border-r border-slate-200 transition-colors"
-              >
-                Browse
-              </button>
-              <span className="px-4 text-slate-500 font-semibold">{logoFile}</span>
-            </div>
-            <p className="text-[10px] text-slate-400 font-bold leading-normal">
-              Accepts .jpg, .png, .gif, .svg up to 1MB. Recommended dimensions: 50px X 50px
-            </p>
-          </div>
-
-          {/* Client Banner */}
-          <div className="space-y-2">
-            <label className="block">Client Banner</label>
-            <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white">
-              <button 
-                onClick={() => setBannerFile('banner.png')}
-                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border-r border-slate-200 transition-colors"
-              >
-                Browse
-              </button>
-              <span className="px-4 text-slate-500 font-semibold">{bannerFile}</span>
-            </div>
-            <p className="text-[10px] text-slate-400 font-bold leading-normal">
-              Accepts .jpg, .png, .gif, .svg up to 1MB. Recommended dimensions: 182px X 50px
-            </p>
-          </div>
+        {/* Buttons */}
+        <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button 
+            type="button"
+            onClick={handleReset}
+            className="px-6 py-2.5 border border-slate-300 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all cursor-pointer"
+          >
+            Reset
+          </button>
+          <button 
+            type="submit"
+            className="px-6 py-2.5 bg-[#004848] hover:bg-[#003333] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
+          >
+            Save Changes
+          </button>
         </div>
-
-        {/* Lower Files Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-bold text-slate-705">
-          {/* Login Banner */}
-          <div className="space-y-2">
-            <label className="block">Login Banner</label>
-            <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white">
-              <button 
-                onClick={() => setLoginBannerFile('login_banner.png')}
-                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border-r border-slate-200 transition-colors"
-              >
-                Browse
-              </button>
-              <span className="px-4 text-slate-500 font-semibold">{loginBannerFile}</span>
-            </div>
-            <p className="text-[10px] text-slate-400 font-bold leading-normal">
-              Accepts .jpg, .png, .gif, .svg up to 1MB. Recommended dimensions: 182px X 50px
-            </p>
-          </div>
-
-          {/* Social Media Images Toggle */}
-          <div className="space-y-3">
-            <label className="block">Social Media Images</label>
-            <button 
-              onClick={() => setSocialMediaToggled(!socialMediaToggled)}
-              className={`w-11 h-6 flex items-center rounded-full p-1 duration-300 ease-in-out ${
-                socialMediaToggled ? 'bg-blue-600' : 'bg-gray-300'
-              }`}
-            >
-              <div className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
-                socialMediaToggled ? 'translate-x-5' : ''
-              }`} />
-            </button>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Footer controls layout */}
-      <div className="flex justify-end gap-3 pt-4">
-        <button 
-          onClick={handleReset}
-          className="px-5 py-2.5 border border-[#004848] bg-white hover:bg-emerald-50/50 text-[#006666] text-xs font-bold rounded-lg shadow-sm transition-all"
-        >
-          Reset to Default
-        </button>
-        <button 
-          onClick={() => toast.info("Previewing branding changes")}
-          className="px-5 py-2.5 border border-[#004848] bg-white hover:bg-emerald-50/50 text-[#006666] text-xs font-bold rounded-lg shadow-sm transition-all"
-        >
-          Preview
-        </button>
-        <button 
-          onClick={() => toast.success("Corporate branding configuration saved and published!")}
-          className="px-6 py-2.5 bg-[#004848] hover:bg-[#003333] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
-        >
-          Publish
-        </button>
-      </div>
-
+      </form>
     </div>
   );
 };
+
 export default BrandingPage;

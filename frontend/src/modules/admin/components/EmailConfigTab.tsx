@@ -1,17 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '../../../hooks/useToast';
+import adminService from '../../../services/adminService';
 
 export const EmailConfigTab: React.FC = () => {
   const toast = useToast();
   const [mailSentAs, setMailSentAs] = useState('admin@mail.com');
   const [mailMethod, setMailMethod] = useState<'secure' | 'smtp' | 'sendmail'>('sendmail');
   const [sendmailPathToggled, setSendmailPathToggled] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    adminService.getConfiguration()
+      .then((cfg) => {
+        if (cfg?.emailConfig) {
+          if (cfg.emailConfig.sendAsEmail) setMailSentAs(cfg.emailConfig.sendAsEmail);
+          if (cfg.emailConfig.mailSentEngine) {
+            const engine = cfg.emailConfig.mailSentEngine.toLowerCase();
+            if (engine === 'smtp' || engine === 'secure' || engine === 'sendmail') {
+              setMailMethod(engine);
+            }
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleResetEmail = () => {
     setMailSentAs('admin@mail.com');
     setMailMethod('sendmail');
     setSendmailPathToggled(true);
     toast.info("Email settings reset to defaults.");
+  };
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      await adminService.updateConfiguration({
+        emailConfig: {
+          sendAsEmail: mailSentAs,
+          mailSentEngine: mailMethod.toUpperCase(),
+          sendmailPathToggled,
+        },
+      });
+      toast.success("Email Configuration saved successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save email configuration");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -108,10 +144,11 @@ export const EmailConfigTab: React.FC = () => {
           Reset
         </button>
         <button 
-          onClick={() => toast.success("Email Configuration saved successfully!")}
-          className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
+          onClick={handleSave}
+          disabled={saving}
+          className="px-6 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer disabled:opacity-50"
         >
-          Save
+          {saving ? 'Saving...' : 'Save'}
         </button>
       </div>
     </div>
