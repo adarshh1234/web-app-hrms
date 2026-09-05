@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import CorporateBrandingTab from './components/CorporateBrandingTab';
-import SystemUsersTab from './components/SystemUsersTab';
-import JobManagementTab from './components/JobManagementTab';
-import OrganizationTab from './components/OrganizationTab';
+import BrandingPage from './BrandingPage';
+import UserManagementPage from './UserManagementPage';
+import JobConfigPage from './JobConfigPage';
+import OrganizationPage from './OrganizationPage';
 
 export type AdminTabType = 'branding' | 'users' | 'job' | 'org';
 
@@ -13,6 +13,8 @@ export const AdminPage: React.FC = () => {
 
   const getInitialTab = (): AdminTabType => {
     if (location.pathname === '/admin/organization') return 'org';
+    if (location.pathname === '/admin/job') return 'job';
+    if (location.pathname === '/admin/user-management') return 'users';
     const tabParam = searchParams.get('tab') as AdminTabType | null;
     if (tabParam && ['branding', 'users', 'job', 'org'].includes(tabParam)) return tabParam;
     return 'branding';
@@ -21,9 +23,9 @@ export const AdminPage: React.FC = () => {
   const [activeTab, setActiveTabState] = useState<AdminTabType>(getInitialTab);
 
   useEffect(() => {
-    if (location.pathname === '/admin/organization') {
-      setActiveTabState('org');
-    }
+    if (location.pathname === '/admin/organization') setActiveTabState('org');
+    else if (location.pathname === '/admin/job') setActiveTabState('job');
+    else if (location.pathname === '/admin/user-management') setActiveTabState('users');
   }, [location.pathname]);
 
   const setActiveTab = (tab: AdminTabType) => {
@@ -66,10 +68,10 @@ export const AdminPage: React.FC = () => {
       </div>
 
       {/* Tab Contents */}
-      {activeTab === 'branding' && <CorporateBrandingTab />}
-      {activeTab === 'users' && <SystemUsersTab />}
-      {activeTab === 'job' && <JobManagementTab />}
-      {activeTab === 'org' && <OrganizationTab />}
+      {activeTab === 'branding' && <BrandingPage />}
+      {activeTab === 'users' && <UserManagementPage />}
+      {activeTab === 'job' && <JobConfigPage />}
+      {activeTab === 'org' && <OrganizationPage />}
     </div>
   );
 };
