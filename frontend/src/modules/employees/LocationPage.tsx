@@ -1,61 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, MapPin } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
-
-interface LocationRecord {
-  id: string;
-  name: string;
-  city: string;
-  country: string;
-  phone: string;
-  employees: number;
-}
+import adminService, { LocationRecord } from '../../services/adminService';
 
 export const LocationPage: React.FC = () => {
   const toast = useToast();
-  const [locations, setLocations] = useState<LocationRecord[]>([
-    { id: '1', name: 'Canadian Regional HQ', city: 'Ottawa', country: 'Canada', phone: '1-876-267-6999', employees: 12 },
-    { id: '2', name: 'Kochi Development Center', city: 'Kochi', country: 'India', phone: '91-484-259110', employees: 45 },
-    { id: '3', name: 'London Regional Office', city: 'London', country: 'United Kingdom', phone: '44-20-7946-0912', employees: 18 },
-  ]);
+  const [locations, setLocations] = useState<LocationRecord[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [newName, setNewName] = useState('');
   const [newCity, setNewCity] = useState('');
   const [newCountry, setNewCountry] = useState('');
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this location?')) {
-      setLocations(locations.filter((l) => l.id !== id));
-      toast.success('Location deleted.');
+  const fetchLocations = async () => {
+    setLoading(true);
+    try {
+      const data = await adminService.getLocations();
+      setLocations(data || []);
+    } catch (err: any) {
+      toast.error('Failed to load locations');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleAdd = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchLocations();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this location?')) {
+      try {
+        await adminService.deleteLocation(id);
+        setLocations(locations.filter((l) => (l.id !== id && l._id !== id)));
+        toast.success('Location deleted.');
+      } catch (err: any) {
+        toast.error(err.message || 'Failed to delete location');
+      }
+    }
+  };
+
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim() || !newCity.trim()) {
       toast.error('Location Name and City are required');
       return;
     }
-    const newLoc: LocationRecord = {
-      id: Date.now().toString(),
-      name: newName,
-      city: newCity,
-      country: newCountry || 'USA',
-      phone: '+1-555-0100',
-      employees: 0
-    };
-    setLocations([...locations, newLoc]);
-    setNewName('');
-    setNewCity('');
-    setNewCountry('');
-    toast.success('Location added successfully.');
+    try {
+      const created = await adminService.createLocation({
+        name: newName.trim(),
+        city: newCity.trim(),
+        country: newCountry.trim() || 'United States',
+        phone: '+1-555-0100',
+        employees: 0,
+      });
+      setLocations([created, ...locations]);
+      setNewName('');
+      setNewCity('');
+      setNewCountry('');
+      toast.success('Location added successfully.');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add location');
+    }
   };
 
   const filteredLocations = locations.filter((l) =>
-    l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    l.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    l.country.toLowerCase().includes(searchQuery.toLowerCase())
+    (l.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (l.city || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (l.country || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -162,7 +175,7 @@ export const LocationPage: React.FC = () => {
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
                         <button
-                          onClick={() => handleDelete(loc.id)}
+                          onClick={() => handleDelete(loc.id || loc._id || '')}
                           className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors"
                           title="Delete"
                         >

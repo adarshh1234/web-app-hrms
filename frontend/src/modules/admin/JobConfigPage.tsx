@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
@@ -6,6 +6,12 @@ import { LocationPage } from '../employees/LocationPage';
 import { DepartmentPage } from '../employees/DepartmentPage';
 import OrganizationTab from './components/OrganizationTab';
 import JobTitlesTab from './components/JobTitlesTab';
+import adminService, {
+  PayGradeRecord,
+  EmpStatusRecord,
+  JobCategoryRecord,
+  WorkShiftRecord,
+} from '../../services/adminService';
 
 type JobTabType = 
   | 'job' 
@@ -22,58 +28,188 @@ export const JobConfigPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab') as JobTabType | null;
   const validTabs: JobTabType[] = ['job', 'grades', 'status', 'categories', 'shifts', 'locations', 'departments', 'organizations'];
-  const activeTab: JobTabType = tabParam && validTabs.includes(tabParam)
-    ? tabParam
-    : 'job';
+  const activeTab: JobTabType = tabParam && validTabs.includes(tabParam) ? tabParam : 'job';
 
   const setActiveTab = (tab: JobTabType) => {
     setSearchParams({ tab });
   };
 
   // Subtab 2: Pay Grades
-  const [payGrades, setPayGrades] = useState([
-    { id: '1', name: '12345qwer', currency: 'United States Dollar' },
-    { id: '2', name: '12345qwer', currency: 'United States Dollar' },
-    { id: '3', name: '12345qwer', currency: 'United States Dollar' },
-    { id: '4', name: '12345qwer', currency: 'United States Dollar' },
-  ]);
-
+  const [payGrades, setPayGrades] = useState<PayGradeRecord[]>([]);
   // Subtab 3: Employment Status
-  const [empStatus, setEmpStatus] = useState([
-    { id: '1', status: '12345qwer' },
-    { id: '2', status: '12345qwer' },
-    { id: '3', status: '12345qwer' },
-    { id: '4', status: '12345qwer' },
-  ]);
-
+  const [empStatus, setEmpStatus] = useState<EmpStatusRecord[]>([]);
   // Subtab 4: Job Categories
-  const [categories, setCategories] = useState([
-    { id: '1', category: 'Craft Workers' },
-    { id: '2', category: 'Laborers and Helpers' },
-    { id: '3', category: 'Office and Clerical Workers' },
-    { id: '4', category: 'Officials and Managers' },
-  ]);
-
+  const [categories, setCategories] = useState<JobCategoryRecord[]>([]);
   // Subtab 5: Work Shifts
-  const [shifts, setShifts] = useState([
-    { id: '1', name: 'General', from: '08:00 AM', to: '05:00 PM', hours: '9.00' },
-    { id: '2', name: 'General', from: '08:00 AM', to: '05:00 PM', hours: '9.00' },
-  ]);
+  const [shifts, setShifts] = useState<WorkShiftRecord[]>([]);
 
-  const handleDeleteGrade = (id: string) => {
-    if (confirm("Delete pay grade?")) setPayGrades(payGrades.filter(x => x.id !== id));
+  useEffect(() => {
+    if (activeTab === 'grades') {
+      adminService.getPayGrades().then(setPayGrades).catch(() => toast.error('Failed to load pay grades'));
+    } else if (activeTab === 'status') {
+      adminService.getEmpStatuses().then(setEmpStatus).catch(() => toast.error('Failed to load employment statuses'));
+    } else if (activeTab === 'categories') {
+      adminService.getJobCategories().then(setCategories).catch(() => toast.error('Failed to load job categories'));
+    } else if (activeTab === 'shifts') {
+      adminService.getWorkShifts().then(setShifts).catch(() => toast.error('Failed to load work shifts'));
+    }
+  }, [activeTab]);
+
+  // Handlers for Pay Grades
+  const handleAddGrade = async () => {
+    const name = prompt('Enter Pay Grade Name:');
+    if (!name || !name.trim()) return;
+    try {
+      const created = await adminService.createPayGrade({ name: name.trim(), currency: 'United States Dollar' });
+      setPayGrades([created, ...payGrades]);
+      toast.success('Pay Grade added successfully');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add pay grade');
+    }
   };
 
-  const handleDeleteStatus = (id: string) => {
-    if (confirm("Delete employment status?")) setEmpStatus(empStatus.filter(x => x.id !== id));
+  const handleEditGrade = async (item: PayGradeRecord) => {
+    const targetId = item.id || item._id || '';
+    const newName = prompt('Update Pay Grade Name:', item.name);
+    if (!newName || !newName.trim()) return;
+    try {
+      const updated = await adminService.updatePayGrade(targetId, { name: newName.trim() });
+      setPayGrades(payGrades.map(x => (x.id === targetId || x._id === targetId) ? updated : x));
+      toast.success('Pay Grade updated');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update pay grade');
+    }
   };
 
-  const handleDeleteCategory = (id: string) => {
-    if (confirm("Delete job category?")) setCategories(categories.filter(x => x.id !== id));
+  const handleDeleteGrade = async (id: string) => {
+    if (confirm("Delete pay grade?")) {
+      try {
+        await adminService.deletePayGrade(id);
+        setPayGrades(payGrades.filter(x => x.id !== id && x._id !== id));
+        toast.success('Pay Grade deleted');
+      } catch (err: any) {
+        toast.error(err.message || 'Failed to delete pay grade');
+      }
+    }
   };
 
-  const handleDeleteShift = (id: string) => {
-    if (confirm("Delete work shift?")) setShifts(shifts.filter(x => x.id !== id));
+  // Handlers for Employment Status
+  const handleAddStatus = async () => {
+    const name = prompt('Enter Employment Status Name (e.g. Full-Time Permanent):');
+    if (!name || !name.trim()) return;
+    try {
+      const created = await adminService.createEmpStatus({ status: name.trim() });
+      setEmpStatus([created, ...empStatus]);
+      toast.success('Employment Status added successfully');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add employment status');
+    }
+  };
+
+  const handleEditStatus = async (item: EmpStatusRecord) => {
+    const targetId = item.id || item._id || '';
+    const newStatus = prompt('Update Employment Status Name:', item.status);
+    if (!newStatus || !newStatus.trim()) return;
+    try {
+      const updated = await adminService.updateEmpStatus(targetId, { status: newStatus.trim() });
+      setEmpStatus(empStatus.map(x => (x.id === targetId || x._id === targetId) ? updated : x));
+      toast.success('Employment Status updated');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update employment status');
+    }
+  };
+
+  const handleDeleteStatus = async (id: string) => {
+    if (confirm("Delete employment status?")) {
+      try {
+        await adminService.deleteEmpStatus(id);
+        setEmpStatus(empStatus.filter(x => x.id !== id && x._id !== id));
+        toast.success('Employment Status deleted');
+      } catch (err: any) {
+        toast.error(err.message || 'Failed to delete employment status');
+      }
+    }
+  };
+
+  // Handlers for Job Categories
+  const handleAddCategory = async () => {
+    const name = prompt('Enter Job Category Name:');
+    if (!name || !name.trim()) return;
+    try {
+      const created = await adminService.createJobCategory({ category: name.trim() });
+      setCategories([created, ...categories]);
+      toast.success('Job Category added successfully');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add job category');
+    }
+  };
+
+  const handleEditCategory = async (item: JobCategoryRecord) => {
+    const targetId = item.id || item._id || '';
+    const newCat = prompt('Update Job Category Name:', item.category);
+    if (!newCat || !newCat.trim()) return;
+    try {
+      const updated = await adminService.updateJobCategory(targetId, { category: newCat.trim() });
+      setCategories(categories.map(x => (x.id === targetId || x._id === targetId) ? updated : x));
+      toast.success('Job Category updated');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update job category');
+    }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    if (confirm("Delete job category?")) {
+      try {
+        await adminService.deleteJobCategory(id);
+        setCategories(categories.filter(x => x.id !== id && x._id !== id));
+        toast.success('Job Category deleted');
+      } catch (err: any) {
+        toast.error(err.message || 'Failed to delete job category');
+      }
+    }
+  };
+
+  // Handlers for Work Shifts
+  const handleAddShift = async () => {
+    const name = prompt('Enter Work Shift Name (e.g. Morning Shift):');
+    if (!name || !name.trim()) return;
+    try {
+      const created = await adminService.createWorkShift({
+        name: name.trim(),
+        from: '08:00 AM',
+        to: '05:00 PM',
+        hours: '9.00',
+      });
+      setShifts([created, ...shifts]);
+      toast.success('Work Shift added successfully');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add work shift');
+    }
+  };
+
+  const handleEditShift = async (item: WorkShiftRecord) => {
+    const targetId = item.id || item._id || '';
+    const newName = prompt('Update Work Shift Name:', item.name);
+    if (!newName || !newName.trim()) return;
+    try {
+      const updated = await adminService.updateWorkShift(targetId, { name: newName.trim() });
+      setShifts(shifts.map(x => (x.id === targetId || x._id === targetId) ? updated : x));
+      toast.success('Work Shift updated');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update work shift');
+    }
+  };
+
+  const handleDeleteShift = async (id: string) => {
+    if (confirm("Delete work shift?")) {
+      try {
+        await adminService.deleteWorkShift(id);
+        setShifts(shifts.filter(x => x.id !== id && x._id !== id));
+        toast.success('Work Shift deleted');
+      } catch (err: any) {
+        toast.error(err.message || 'Failed to delete work shift');
+      }
+    }
   };
 
   return (
@@ -115,10 +251,10 @@ export const JobConfigPage: React.FC = () => {
 
           <div className="bg-slate-100 border border-slate-200 rounded-xl p-5 space-y-3">
             <div className="flex justify-between items-center pb-1">
-              <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
+              <span className="text-[10px] font-bold text-slate-500">({payGrades.length}) Records Found</span>
               <button 
-                onClick={() => toast.info("Add pay grade")}
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors"
+                onClick={handleAddGrade}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors cursor-pointer"
               >
                 <Plus className="h-3 w-3" />
                 <span>Add</span>
@@ -134,24 +270,27 @@ export const JobConfigPage: React.FC = () => {
 
             {/* Rows */}
             <div className="space-y-1.5">
-              {payGrades.map(g => (
-                <div 
-                  key={g.id}
-                  className="grid grid-cols-3 items-center bg-white border border-slate-200 rounded-lg py-2.5 px-4 shadow-sm text-xs font-bold text-slate-800"
-                >
-                  <span>{g.name}</span>
-                  <span className="text-slate-500 font-semibold">{g.currency}</span>
-                  
-                  <div className="flex justify-end gap-2.5">
-                    <button onClick={() => toast.info(`Edit ${g.name}`)} className="p-1 text-slate-400 hover:text-blue-600">
-                      <Edit2 className="h-3.5 w-3.5" />
-                    </button>
-                    <button onClick={() => handleDeleteGrade(g.id)} className="p-1 text-slate-400 hover:text-rose-600">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+              {payGrades.map(g => {
+                const gId = g.id || g._id || '';
+                return (
+                  <div 
+                    key={gId}
+                    className="grid grid-cols-3 items-center bg-white border border-slate-200 rounded-lg py-2.5 px-4 shadow-sm text-xs font-bold text-slate-800"
+                  >
+                    <span>{g.name}</span>
+                    <span className="text-slate-500 font-semibold">{g.currency}</span>
+                    
+                    <div className="flex justify-end gap-2.5">
+                      <button onClick={() => handleEditGrade(g)} className="p-1 text-slate-400 hover:text-blue-600 cursor-pointer">
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button onClick={() => handleDeleteGrade(gId)} className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
           </div>
@@ -165,10 +304,10 @@ export const JobConfigPage: React.FC = () => {
 
           <div className="bg-slate-100 border border-slate-200 rounded-xl p-5 space-y-3">
             <div className="flex justify-between items-center pb-1">
-              <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
+              <span className="text-[10px] font-bold text-slate-500">({empStatus.length}) Records Found</span>
               <button 
-                onClick={() => toast.info("Add employment status")}
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors"
+                onClick={handleAddStatus}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors cursor-pointer"
               >
                 <Plus className="h-3 w-3" />
                 <span>Add</span>
@@ -183,23 +322,26 @@ export const JobConfigPage: React.FC = () => {
 
             {/* Rows */}
             <div className="space-y-1.5">
-              {empStatus.map(s => (
-                <div 
-                  key={s.id}
-                  className="grid grid-cols-2 items-center bg-white border border-slate-200 rounded-lg py-2.5 px-4 shadow-sm text-xs font-bold text-slate-800"
-                >
-                  <span>{s.status}</span>
-                  
-                  <div className="flex justify-end gap-2.5">
-                    <button onClick={() => toast.info(`Edit ${s.status}`)} className="p-1 text-slate-400 hover:text-blue-600">
-                      <Edit2 className="h-3.5 w-3.5" />
-                    </button>
-                    <button onClick={() => handleDeleteStatus(s.id)} className="p-1 text-slate-400 hover:text-rose-600">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+              {empStatus.map(s => {
+                const sId = s.id || s._id || '';
+                return (
+                  <div 
+                    key={sId}
+                    className="grid grid-cols-2 items-center bg-white border border-slate-200 rounded-lg py-2.5 px-4 shadow-sm text-xs font-bold text-slate-800"
+                  >
+                    <span>{s.status}</span>
+                    
+                    <div className="flex justify-end gap-2.5">
+                      <button onClick={() => handleEditStatus(s)} className="p-1 text-slate-400 hover:text-blue-600 cursor-pointer">
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button onClick={() => handleDeleteStatus(sId)} className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
           </div>
@@ -213,10 +355,10 @@ export const JobConfigPage: React.FC = () => {
 
           <div className="bg-slate-100 border border-slate-200 rounded-xl p-5 space-y-3">
             <div className="flex justify-between items-center pb-1">
-              <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
+              <span className="text-[10px] font-bold text-slate-500">({categories.length}) Records Found</span>
               <button 
-                onClick={() => toast.info("Add job category")}
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors"
+                onClick={handleAddCategory}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors cursor-pointer"
               >
                 <Plus className="h-3 w-3" />
                 <span>Add</span>
@@ -231,23 +373,26 @@ export const JobConfigPage: React.FC = () => {
 
             {/* Rows */}
             <div className="space-y-1.5">
-              {categories.map(c => (
-                <div 
-                  key={c.id}
-                  className="grid grid-cols-2 items-center bg-white border border-slate-200 rounded-lg py-2.5 px-4 shadow-sm text-xs font-bold text-slate-800"
-                >
-                  <span>{c.category}</span>
-                  
-                  <div className="flex justify-end gap-2.5">
-                    <button onClick={() => toast.info(`Edit ${c.category}`)} className="p-1 text-slate-400 hover:text-blue-600">
-                      <Edit2 className="h-3.5 w-3.5" />
-                    </button>
-                    <button onClick={() => handleDeleteCategory(c.id)} className="p-1 text-slate-400 hover:text-rose-600">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+              {categories.map(c => {
+                const cId = c.id || c._id || '';
+                return (
+                  <div 
+                    key={cId}
+                    className="grid grid-cols-2 items-center bg-white border border-slate-200 rounded-lg py-2.5 px-4 shadow-sm text-xs font-bold text-slate-800"
+                  >
+                    <span>{c.category}</span>
+                    
+                    <div className="flex justify-end gap-2.5">
+                      <button onClick={() => handleEditCategory(c)} className="p-1 text-slate-400 hover:text-blue-600 cursor-pointer">
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button onClick={() => handleDeleteCategory(cId)} className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
           </div>
@@ -261,10 +406,10 @@ export const JobConfigPage: React.FC = () => {
 
           <div className="bg-slate-100 border border-slate-200 rounded-xl p-5 space-y-3">
             <div className="flex justify-between items-center pb-1">
-              <span className="text-[10px] font-bold text-slate-500">(3) Records Found</span>
+              <span className="text-[10px] font-bold text-slate-500">({shifts.length}) Records Found</span>
               <button 
-                onClick={() => toast.info("Add work shift")}
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors"
+                onClick={handleAddShift}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#0473b8] hover:bg-[#03629e] text-white text-[10px] font-bold rounded-md shadow-xs transition-colors cursor-pointer"
               >
                 <Plus className="h-3 w-3" />
                 <span>Add</span>
@@ -282,26 +427,29 @@ export const JobConfigPage: React.FC = () => {
 
             {/* Rows */}
             <div className="space-y-1.5">
-              {shifts.map(s => (
-                <div 
-                  key={s.id}
-                  className="grid grid-cols-5 items-center bg-white border border-slate-200 rounded-lg py-2.5 px-4 shadow-sm text-xs font-bold text-slate-800"
-                >
-                  <span>{s.name}</span>
-                  <span className="text-slate-500 font-semibold">{s.from}</span>
-                  <span className="text-slate-500 font-semibold">{s.to}</span>
-                  <span>{s.hours}</span>
-                  
-                  <div className="flex justify-end gap-2.5">
-                    <button onClick={() => toast.info(`Edit ${s.name} shift`)} className="p-1 text-slate-400 hover:text-blue-600">
-                      <Edit2 className="h-3.5 w-3.5" />
-                    </button>
-                    <button onClick={() => handleDeleteShift(s.id)} className="p-1 text-slate-400 hover:text-rose-600">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+              {shifts.map(s => {
+                const sId = s.id || s._id || '';
+                return (
+                  <div 
+                    key={sId}
+                    className="grid grid-cols-5 items-center bg-white border border-slate-200 rounded-lg py-2.5 px-4 shadow-sm text-xs font-bold text-slate-800"
+                  >
+                    <span>{s.name}</span>
+                    <span className="text-slate-500 font-semibold">{s.from}</span>
+                    <span className="text-slate-500 font-semibold">{s.to}</span>
+                    <span>{s.hours}</span>
+                    
+                    <div className="flex justify-end gap-2.5">
+                      <button onClick={() => handleEditShift(s)} className="p-1 text-slate-400 hover:text-blue-600 cursor-pointer">
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button onClick={() => handleDeleteShift(sId)} className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
           </div>

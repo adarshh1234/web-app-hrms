@@ -1,59 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Building2 } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
-
-interface DepartmentRecord {
-  id: string;
-  name: string;
-  code: string;
-  head: string;
-  employeeCount: number;
-}
+import adminService, { DepartmentRecord } from '../../services/adminService';
 
 export const DepartmentPage: React.FC = () => {
   const toast = useToast();
-  const [departments, setDepartments] = useState<DepartmentRecord[]>([
-    { id: '1', name: 'Engineering & Technology', code: 'ENG', head: 'Sarah Joseph', employeeCount: 24 },
-    { id: '2', name: 'Human Resources', code: 'HR', head: 'Alex Morgan', employeeCount: 8 },
-    { id: '3', name: 'Sales & Marketing', code: 'MKT', head: 'David Lee', employeeCount: 15 },
-    { id: '4', name: 'Finance & Operations', code: 'FIN', head: 'Rachel Green', employeeCount: 10 },
-  ]);
+  const [departments, setDepartments] = useState<DepartmentRecord[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [searchName, setSearchName] = useState('');
   const [newDeptName, setNewDeptName] = useState('');
   const [newDeptCode, setNewDeptCode] = useState('');
   const [newDeptHead, setNewDeptHead] = useState('');
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this department?')) {
-      setDepartments(departments.filter((d) => d.id !== id));
-      toast.success('Department deleted successfully.');
+  const fetchDepartments = async () => {
+    setLoading(true);
+    try {
+      const data = await adminService.getDepartments();
+      setDepartments(data || []);
+    } catch (err: any) {
+      toast.error('Failed to load departments');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleAdd = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this department?')) {
+      try {
+        await adminService.deleteDepartment(id);
+        setDepartments(departments.filter((d) => (d.id !== id && d._id !== id)));
+        toast.success('Department deleted successfully.');
+      } catch (err: any) {
+        toast.error(err.message || 'Failed to delete department');
+      }
+    }
+  };
+
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDeptName.trim()) {
       toast.error('Department name is required');
       return;
     }
-    const newDept: DepartmentRecord = {
-      id: Date.now().toString(),
-      name: newDeptName,
-      code: newDeptCode || 'DEPT',
-      head: newDeptHead || 'Unassigned',
-      employeeCount: 0
-    };
-    setDepartments([...departments, newDept]);
-    setNewDeptName('');
-    setNewDeptCode('');
-    setNewDeptHead('');
-    toast.success('Department added successfully.');
+    try {
+      const created = await adminService.createDepartment({
+        name: newDeptName.trim(),
+        code: newDeptCode.trim() || 'DEPT',
+        head: newDeptHead.trim() || 'Unassigned',
+        employeeCount: 0,
+      });
+      setDepartments([created, ...departments]);
+      setNewDeptName('');
+      setNewDeptCode('');
+      setNewDeptHead('');
+      toast.success('Department added successfully.');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add department');
+    }
   };
 
   const filteredDepartments = departments.filter((d) =>
-    d.name.toLowerCase().includes(searchName.toLowerCase()) ||
-    d.code.toLowerCase().includes(searchName.toLowerCase())
+    (d.name || '').toLowerCase().includes(searchName.toLowerCase()) ||
+    (d.code || '').toLowerCase().includes(searchName.toLowerCase())
   );
 
   return (
@@ -158,7 +171,7 @@ export const DepartmentPage: React.FC = () => {
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
                         <button
-                          onClick={() => handleDelete(dept.id)}
+                          onClick={() => handleDelete(dept.id || dept._id || '')}
                           className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors"
                           title="Delete"
                         >

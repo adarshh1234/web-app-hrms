@@ -21,6 +21,55 @@ export interface JobTitleRecord {
   status?: 'Active' | 'Inactive';
 }
 
+export interface PayGradeRecord {
+  id?: string;
+  _id?: string;
+  name: string;
+  currency: string;
+  minSalary?: number;
+  maxSalary?: number;
+}
+
+export interface EmpStatusRecord {
+  id?: string;
+  _id?: string;
+  status: string;
+}
+
+export interface JobCategoryRecord {
+  id?: string;
+  _id?: string;
+  category: string;
+}
+
+export interface WorkShiftRecord {
+  id?: string;
+  _id?: string;
+  name: string;
+  from: string;
+  to: string;
+  hours: string;
+}
+
+export interface LocationRecord {
+  id?: string;
+  _id?: string;
+  name: string;
+  city: string;
+  country: string;
+  phone?: string;
+  employees?: number;
+}
+
+export interface DepartmentRecord {
+  id?: string;
+  _id?: string;
+  name: string;
+  code: string;
+  head?: string;
+  employeeCount?: number;
+}
+
 export interface OrganizationData {
   name: string;
   regNumber?: string;
@@ -189,6 +238,198 @@ export const adminService = {
   async deleteJobTitle(id: string): Promise<void> {
     const res = await fetch(`${ADMIN_API_BASE}/job-titles/${id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to delete job title`);
+  },
+
+  // Pay Grades
+  async getPayGrades(): Promise<PayGradeRecord[]> {
+    const res = await fetch(`${ADMIN_API_BASE}/pay-grades`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch pay grades`);
+    const json = await res.json();
+    return (json.data || []).map((x: any) => ({ ...x, id: x._id || x.id }));
+  },
+  async createPayGrade(payload: Partial<PayGradeRecord>): Promise<PayGradeRecord> {
+    const res = await fetch(`${ADMIN_API_BASE}/pay-grades`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to create pay grade`);
+    const json = await res.json();
+    return { ...json.data, id: json.data._id || json.data.id };
+  },
+  async updatePayGrade(id: string, payload: Partial<PayGradeRecord>): Promise<PayGradeRecord> {
+    const res = await fetch(`${ADMIN_API_BASE}/pay-grades/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to update pay grade`);
+    const json = await res.json();
+    return { ...json.data, id: json.data._id || json.data.id };
+  },
+  async deletePayGrade(id: string): Promise<void> {
+    const res = await fetch(`${ADMIN_API_BASE}/pay-grades/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to delete pay grade`);
+  },
+
+  // Employment Statuses
+  async getEmpStatuses(): Promise<EmpStatusRecord[]> {
+    const res = await fetch(`${ADMIN_API_BASE}/employment-statuses`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch employment statuses`);
+    const json = await res.json();
+    return (json.data || []).map((x: any) => ({ ...x, id: x._id || x.id }));
+  },
+  async createEmpStatus(payload: Partial<EmpStatusRecord>): Promise<EmpStatusRecord> {
+    const res = await fetch(`${ADMIN_API_BASE}/employment-statuses`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to create employment status`);
+    const json = await res.json();
+    return { ...json.data, id: json.data._id || json.data.id };
+  },
+  async updateEmpStatus(id: string, payload: Partial<EmpStatusRecord>): Promise<EmpStatusRecord> {
+    const res = await fetch(`${ADMIN_API_BASE}/employment-statuses/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to update employment status`);
+    const json = await res.json();
+    return { ...json.data, id: json.data._id || json.data.id };
+  },
+  async deleteEmpStatus(id: string): Promise<void> {
+    const res = await fetch(`${ADMIN_API_BASE}/employment-statuses/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to delete employment status`);
+  },
+
+  // Job Categories
+  async getJobCategories(): Promise<JobCategoryRecord[]> {
+    const res = await fetch(`${ADMIN_API_BASE}/job-categories`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch job categories`);
+    const json = await res.json();
+    return (json.data || []).map((x: any) => ({ ...x, id: x._id || x.id }));
+  },
+  async createJobCategory(payload: Partial<JobCategoryRecord>): Promise<JobCategoryRecord> {
+    const res = await fetch(`${ADMIN_API_BASE}/job-categories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to create job category`);
+    const json = await res.json();
+    return { ...json.data, id: json.data._id || json.data.id };
+  },
+  async updateJobCategory(id: string, payload: Partial<JobCategoryRecord>): Promise<JobCategoryRecord> {
+    const res = await fetch(`${ADMIN_API_BASE}/job-categories/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to update job category`);
+    const json = await res.json();
+    return { ...json.data, id: json.data._id || json.data.id };
+  },
+  async deleteJobCategory(id: string): Promise<void> {
+    const res = await fetch(`${ADMIN_API_BASE}/job-categories/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to delete job category`);
+  },
+
+  // Work Shifts
+  async getWorkShifts(): Promise<WorkShiftRecord[]> {
+    const res = await fetch(`${ADMIN_API_BASE}/work-shifts`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch work shifts`);
+    const json = await res.json();
+    return (json.data || []).map((x: any) => ({ ...x, id: x._id || x.id }));
+  },
+  async createWorkShift(payload: Partial<WorkShiftRecord>): Promise<WorkShiftRecord> {
+    const res = await fetch(`${ADMIN_API_BASE}/work-shifts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to create work shift`);
+    const json = await res.json();
+    return { ...json.data, id: json.data._id || json.data.id };
+  },
+  async updateWorkShift(id: string, payload: Partial<WorkShiftRecord>): Promise<WorkShiftRecord> {
+    const res = await fetch(`${ADMIN_API_BASE}/work-shifts/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to update work shift`);
+    const json = await res.json();
+    return { ...json.data, id: json.data._id || json.data.id };
+  },
+  async deleteWorkShift(id: string): Promise<void> {
+    const res = await fetch(`${ADMIN_API_BASE}/work-shifts/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to delete work shift`);
+  },
+
+  // Locations
+  async getLocations(): Promise<LocationRecord[]> {
+    const res = await fetch(`${ADMIN_API_BASE}/locations`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch locations`);
+    const json = await res.json();
+    return (json.data || []).map((x: any) => ({ ...x, id: x._id || x.id }));
+  },
+  async createLocation(payload: Partial<LocationRecord>): Promise<LocationRecord> {
+    const res = await fetch(`${ADMIN_API_BASE}/locations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to create location`);
+    const json = await res.json();
+    return { ...json.data, id: json.data._id || json.data.id };
+  },
+  async updateLocation(id: string, payload: Partial<LocationRecord>): Promise<LocationRecord> {
+    const res = await fetch(`${ADMIN_API_BASE}/locations/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to update location`);
+    const json = await res.json();
+    return { ...json.data, id: json.data._id || json.data.id };
+  },
+  async deleteLocation(id: string): Promise<void> {
+    const res = await fetch(`${ADMIN_API_BASE}/locations/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to delete location`);
+  },
+
+  // Departments
+  async getDepartments(): Promise<DepartmentRecord[]> {
+    const res = await fetch(`${ADMIN_API_BASE}/departments`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch departments`);
+    const json = await res.json();
+    return (json.data || []).map((x: any) => ({ ...x, id: x._id || x.id }));
+  },
+  async createDepartment(payload: Partial<DepartmentRecord>): Promise<DepartmentRecord> {
+    const res = await fetch(`${ADMIN_API_BASE}/departments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to create department`);
+    const json = await res.json();
+    return { ...json.data, id: json.data._id || json.data.id };
+  },
+  async updateDepartment(id: string, payload: Partial<DepartmentRecord>): Promise<DepartmentRecord> {
+    const res = await fetch(`${ADMIN_API_BASE}/departments/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to update department`);
+    const json = await res.json();
+    return { ...json.data, id: json.data._id || json.data.id };
+  },
+  async deleteDepartment(id: string): Promise<void> {
+    const res = await fetch(`${ADMIN_API_BASE}/departments/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to delete department`);
   },
 
   // 3. ORGANIZATION

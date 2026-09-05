@@ -273,4 +273,87 @@ describe('Admin Module Backend API Integration Tests', () => {
       expect(res.body.data.localization.language).toBe('en_CA');
     });
   });
+
+  // 8. JOB SUBMODULES TESTS
+  describe('Job Submodules APIs', () => {
+    it('should list and create pay grades', async () => {
+      const res = await request(app).get('/api/v1/admin/pay-grades');
+      expect(res.status).toBe(200);
+      expect(res.body.data.length).toBeGreaterThan(0);
+
+      const createRes = await request(app).post('/api/v1/admin/pay-grades').send({
+        name: 'Executive Band A',
+        currency: 'EUR',
+      });
+      expect(createRes.status).toBe(201);
+      expect(createRes.body.data.name).toBe('Executive Band A');
+    });
+
+    it('should list and create employment statuses', async () => {
+      const res = await request(app).get('/api/v1/admin/employment-statuses');
+      expect(res.status).toBe(200);
+      expect(res.body.data.length).toBeGreaterThan(0);
+
+      const createRes = await request(app).post('/api/v1/admin/employment-statuses').send({
+        status: 'Freelance Contractor',
+      });
+      expect(createRes.status).toBe(201);
+      expect(createRes.body.data.status).toBe('Freelance Contractor');
+    });
+
+    it('should list and create job categories', async () => {
+      const res = await request(app).get('/api/v1/admin/job-categories');
+      expect(res.status).toBe(200);
+      expect(res.body.data.length).toBeGreaterThan(0);
+
+      const createRes = await request(app).post('/api/v1/admin/job-categories').send({
+        category: 'Executive Leadership',
+      });
+      expect(createRes.status).toBe(201);
+      expect(createRes.body.data.category).toBe('Executive Leadership');
+    });
+
+    it('should list and create work shifts', async () => {
+      const res = await request(app).get('/api/v1/admin/work-shifts');
+      expect(res.status).toBe(200);
+      expect(res.body.data.length).toBeGreaterThan(0);
+
+      const createRes = await request(app).post('/api/v1/admin/work-shifts').send({
+        name: 'Flexi Shift',
+        from: '10:00 AM',
+        to: '07:00 PM',
+        hours: '9.00',
+      });
+      expect(createRes.status).toBe(201);
+      expect(createRes.body.data.name).toBe('Flexi Shift');
+    });
+
+    it('should list and create locations', async () => {
+      const res = await request(app).get('/api/v1/admin/locations');
+      expect(res.status).toBe(200);
+      expect(res.body.data.length).toBeGreaterThan(0);
+
+      const createRes = await request(app).post('/api/v1/admin/locations').send({
+        name: 'Berlin Tech Center',
+        city: 'Berlin',
+        country: 'Germany',
+      });
+      expect(createRes.status).toBe(201);
+      expect(createRes.body.data.name).toBe('Berlin Tech Center');
+    });
+
+    it('should list and create departments', async () => {
+      const res = await request(app).get('/api/v1/admin/departments');
+      expect(res.status).toBe(200);
+      expect(res.body.data.length).toBeGreaterThan(0);
+
+      const createRes = await request(app).post('/api/v1/admin/departments').send({
+        name: 'Artificial Intelligence Research',
+        code: 'AIR',
+        head: 'Dr. Alan Turing',
+      });
+      expect(createRes.status).toBe(201);
+      expect(createRes.body.data.name).toBe('Artificial Intelligence Research');
+    });
+  });
 });
