@@ -1,5 +1,4 @@
-import { NotificationChannel, INotification } from '../../types/notification.types';
-
+import { NotificationChannel, INotification } from '../notification.types';
 
 export interface INotificationProvider {
   channel: NotificationChannel;
@@ -10,7 +9,7 @@ export class MockNotificationProvider implements INotificationProvider {
   constructor(public channel: NotificationChannel) {}
 
   async send(notification: INotification): Promise<{ success: boolean; providerResponse?: any }> {
-    console.log(`[Provider Stub - ${this.channel}] Dispatching message ID: ${notification._id || 'new'}`);
+    console.log(`[Provider Stub - ${this.channel}] Dispatching message ID: ${notification._id || (notification as any).id || 'new'}`);
     return {
       success: true,
       providerResponse: {

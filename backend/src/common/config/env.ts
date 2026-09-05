@@ -4,8 +4,8 @@ import { z } from 'zod';
 dotenv.config();
 
 const envSchema = z.object({
-  PORT: z.string().default('5000').transform((val) => parseInt(val, 10)),
-  MONGODB_URI: z.string().default('mongodb://localhost:27017/hr_module_notifications'),
+  PORT: z.coerce.number().default(5000),
+  MONGODB_URI: z.string().default('mongodb://127.0.0.1:27017/hr_module_notifications'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   CORS_ORIGIN: z.string().default('*'),
 });

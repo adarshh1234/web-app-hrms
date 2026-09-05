@@ -1,0 +1,21 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Production build
+dist
+dist-ssr
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Editor & OS files
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea

@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import mongoose from 'mongoose';
-import { NotificationChannel, RecipientType, NotificationStatus } from '../types/notification.types';
-
+import { NotificationChannel, RecipientType, NotificationStatus } from './notification.types';
 
 export const mongoIdSchema = z.string().refine(
   (val) => mongoose.Types.ObjectId.isValid(val),

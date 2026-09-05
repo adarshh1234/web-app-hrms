@@ -2,22 +2,26 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { config } from './config/env';
-import { requestIdMiddleware } from './middlewares/requestId';
-import { authMiddleware } from './middlewares/authMiddleware';
-import { errorHandler } from './middlewares/errorHandler';
-import { notFoundHandler } from './middlewares/notFound';
+import { config } from './common/config/env';
+import { requestIdMiddleware } from './common/middlewares/requestId';
+import { authMiddleware } from './common/middlewares/authMiddleware';
+import { errorHandler } from './common/middlewares/errorHandler';
+import { notFoundHandler } from './common/middlewares/notFound';
 import routes from './routes/index';
-
 
 export const createApp = (): Express => {
   const app = express();
 
   // Security & Header Middlewares
   app.use(helmet());
+  const allowedOrigins =
+    config.CORS_ORIGIN === '*'
+      ? true
+      : config.CORS_ORIGIN.split(',').map((origin) => origin.trim());
+
   app.use(
     cors({
-      origin: config.CORS_ORIGIN === '*' ? true : config.CORS_ORIGIN.split(','),
+      origin: allowedOrigins,
       credentials: true,
     })
   );

@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import notificationRoutes from './notification.routes';
-import healthRoutes from './health.routes';
-
+import notificationRoutes from '../modules/notification/notification.routes';
+import healthRoutes from '../common/routes/health.routes';
 
 const router = Router();
 

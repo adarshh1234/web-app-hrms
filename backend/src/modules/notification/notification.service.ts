@@ -1,9 +1,8 @@
-import { notificationRepository, NotificationRepository } from '../repositories/notification.repository';
+import { notificationRepository, NotificationRepository } from './notification.repository';
 import { providerRegistry } from './providers/index';
-import { INotification, INotificationQuery, IPaginatedResult, NotificationStatus } from '../types/notification.types';
-import { AppError } from '../utils/AppError';
-import { INotificationDocument } from '../models/Notification';
-
+import { INotification, INotificationQuery, IPaginatedResult, NotificationStatus } from './notification.types';
+import { AppError } from '../../common/errors/AppError';
+import { INotificationDocument } from './notification.model';
 
 export class NotificationService {
   constructor(private repo: NotificationRepository = notificationRepository) {}
@@ -31,24 +30,36 @@ export class NotificationService {
       throw AppError.notFound(`Notification with ID '${id}' not found`);
     }
 
+    // 1. Idempotency Check BEFORE send logic: If already marked as SENT, do not trigger send again
+    if (existing.status === NotificationStatus.SENT) {
+      return existing;
+    }
+
     if (!existing.message || existing.message.trim() === '') {
       throw AppError.badRequest('Cannot send notification without message content');
     }
 
-    // Trigger provider dispatch
-    const provider = providerRegistry.getProvider(existing.channel);
-    await provider.send(existing);
-
-    // Update status to SENT
-    const updated = await this.repo.updateById(id, {
-      status: NotificationStatus.SENT,
-    });
-
-    if (!updated) {
+    // 2. Race-condition protection: Atomically mark status as SENT before calling send logic
+    const claimed = await this.repo.findAndMarkAsSent(id);
+    if (!claimed) {
+      // Re-query: If another concurrent call marked it as SENT, return the sent notification safely
+      const reChecked = await this.repo.findById(id);
+      if (reChecked && reChecked.status === NotificationStatus.SENT) {
+        return reChecked;
+      }
       throw AppError.internal('Failed to update notification status');
     }
 
-    return updated;
+    try {
+      // 3. Trigger provider dispatch (guaranteed to run at most once)
+      const provider = providerRegistry.getProvider(claimed.channel);
+      await provider.send(claimed);
+      return claimed;
+    } catch (err) {
+      // Revert status to DRAFT if provider dispatch fails so it can be retried
+      await this.repo.updateById(id, { status: NotificationStatus.DRAFT });
+      throw err;
+    }
   }
 
   async getNotificationById(id: string): Promise<INotificationDocument> {
@@ -69,15 +80,14 @@ export class NotificationService {
       throw AppError.badRequest('Cannot modify a notification that has already been sent');
     }
 
+    // If status is being transitioned to SENT via update
+    if (updateData.status === NotificationStatus.SENT && existing.status !== NotificationStatus.SENT) {
+      return await this.sendNotification(id);
+    }
+
     const updated = await this.repo.updateById(id, updateData);
     if (!updated) {
       throw AppError.internal('Failed to update notification');
-    }
-
-    // If status was changed to SENT during update
-    if (updated.status === NotificationStatus.SENT && existing.status !== NotificationStatus.SENT) {
-      const provider = providerRegistry.getProvider(updated.channel);
-      await provider.send(updated);
     }
 
     return updated;

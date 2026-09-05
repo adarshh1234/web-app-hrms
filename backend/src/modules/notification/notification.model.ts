@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { NotificationChannel, RecipientType, NotificationStatus, INotification } from '../types/notification.types';
-
+import { NotificationChannel, RecipientType, NotificationStatus, INotification } from './notification.types';
 
 export interface INotificationDocument extends Omit<INotification, '_id'>, Document {}
 

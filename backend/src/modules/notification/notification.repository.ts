@@ -1,7 +1,6 @@
 import { FilterQuery } from 'mongoose';
-import { NotificationModel, INotificationDocument } from '../models/Notification';
-import { INotification, INotificationQuery, IPaginatedResult } from '../types/notification.types';
-
+import { NotificationModel, INotificationDocument } from './notification.model';
+import { INotification, INotificationQuery, IPaginatedResult, NotificationStatus } from './notification.types';
 
 export class NotificationRepository {
   async create(data: Partial<INotification>): Promise<INotificationDocument> {
@@ -18,6 +17,14 @@ export class NotificationRepository {
       new: true,
       runValidators: true,
     }).exec();
+  }
+
+  async findAndMarkAsSent(id: string): Promise<INotificationDocument | null> {
+    return await NotificationModel.findOneAndUpdate(
+      { _id: id, status: { $ne: NotificationStatus.SENT } },
+      { status: NotificationStatus.SENT },
+      { new: true, runValidators: true }
+    ).exec();
   }
 
   async deleteById(id: string): Promise<boolean> {

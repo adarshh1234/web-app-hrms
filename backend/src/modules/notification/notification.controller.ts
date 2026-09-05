@@ -1,13 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { notificationService, NotificationService } from '../services/notification.service';
-import { sendResponse } from '../utils/apiResponse';
+import { notificationService, NotificationService } from './notification.service';
+import { sendResponse } from '../../common/utils/apiResponse';
 import {
   createNotificationSchema,
   updateNotificationSchema,
   queryNotificationSchema,
   notificationIdParamSchema,
-} from '../validators/notification.validator';
-
+} from './notification.validator';
 
 export class NotificationController {
   constructor(private service: NotificationService = notificationService) {}

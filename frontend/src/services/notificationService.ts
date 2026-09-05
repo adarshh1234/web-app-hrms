@@ -14,26 +14,7 @@ export interface BackendNotification {
   updatedAt?: string;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
-const STORAGE_KEY = 'hr_module_notifications_fallback_v1';
-
-// Helper for localStorage fallback if server is offline
-const getLocalFallback = (): BackendNotification[] => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
-
-const saveLocalFallback = (list: BackendNotification[]) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  } catch {
-    // ignore storage error
-  }
-};
+const VITE_API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/$/, '');
 
 export const notificationService = {
   /**
@@ -72,7 +53,7 @@ export const notificationService = {
       queryParams.append('page', String(params?.page || 1));
       queryParams.append('limit', String(params?.limit || 50));
 
-      const res = await fetch(`${API_BASE_URL}/notifications?${queryParams.toString()}`);
+      const res = await fetch(`${VITE_API_URL}/notifications?${queryParams.toString()}`);
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: Failed to fetch notifications`);
       }
@@ -82,25 +63,8 @@ export const notificationService = {
         total: json.pagination?.totalItems || json.data?.length || 0,
       };
     } catch (err) {
-      console.warn('[notificationService] Backend request failed, utilizing fallback cache:', err);
-      let list = getLocalFallback();
-      if (params?.channel) {
-        const mapped = this.mapChannelToBackend(params.channel);
-        list = list.filter((item) => item.channel === mapped);
-      }
-      if (params?.status) {
-        list = list.filter((item) => item.status === params.status);
-      }
-      if (params?.search) {
-        const q = params.search.toLowerCase();
-        list = list.filter(
-          (item) =>
-            item.message?.toLowerCase().includes(q) ||
-            item.subject?.toLowerCase().includes(q) ||
-            item.recipients?.toLowerCase().includes(q)
-        );
-      }
-      return { data: list, total: list.length };
+      console.error('[notificationService] Backend request failed:', err);
+      throw err;
     }
   },
 
@@ -126,7 +90,7 @@ export const notificationService = {
     };
 
     try {
-      const res = await fetch(`${API_BASE_URL}/notifications`, {
+      const res = await fetch(`${VITE_API_URL}/notifications`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -138,27 +102,10 @@ export const notificationService = {
       }
 
       const json = await res.json();
-      const createdItem: BackendNotification = json.data;
-
-      // Keep local fallback updated
-      const currentList = getLocalFallback();
-      saveLocalFallback([createdItem, ...currentList]);
-
-      return createdItem;
+      return json.data;
     } catch (err) {
-      console.warn('[notificationService] Backend post failed, storing in fallback storage:', err);
-      const fallbackItem: BackendNotification = {
-        id: `LOCAL-${Date.now()}`,
-        channel: backendChannel,
-        subject: body.subject,
-        message: body.message,
-        recipients: body.recipients,
-        status: body.status,
-        createdAt: new Date().toISOString(),
-      };
-      const currentList = getLocalFallback();
-      saveLocalFallback([fallbackItem, ...currentList]);
-      return fallbackItem;
+      console.error('[notificationService] Backend post failed:', err);
+      throw err;
     }
   },
 
@@ -167,7 +114,7 @@ export const notificationService = {
    */
   async sendNotification(id: string): Promise<BackendNotification> {
     try {
-      const res = await fetch(`${API_BASE_URL}/notifications/${id}/send`, {
+      const res = await fetch(`${VITE_API_URL}/notifications/${id}/send`, {
         method: 'POST',
       });
       if (!res.ok) {
@@ -176,7 +123,7 @@ export const notificationService = {
       const json = await res.json();
       return json.data;
     } catch (err) {
-      console.warn('[notificationService] Send draft API call failed:', err);
+      console.error('[notificationService] Send draft API call failed:', err);
       throw err;
     }
   },
@@ -186,15 +133,16 @@ export const notificationService = {
    */
   async deleteNotification(id: string): Promise<void> {
     try {
-      await fetch(`${API_BASE_URL}/notifications/${id}`, {
+      const res = await fetch(`${VITE_API_URL}/notifications/${id}`, {
         method: 'DELETE',
       });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: Failed to delete draft`);
+      }
     } catch (err) {
-      console.warn('[notificationService] Delete draft API call failed:', err);
+      console.error('[notificationService] Delete draft API call failed:', err);
+      throw err;
     }
-    // Also remove from fallback local cache
-    const current = getLocalFallback();
-    saveLocalFallback(current.filter((item) => item.id !== id));
   },
 };
 

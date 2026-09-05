@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { notificationController } from '../controllers/notification.controller';
-import { sendRateLimiter } from '../middlewares/rateLimiter';
-
+import { notificationController } from './notification.controller';
+import { sendRateLimiter } from '../../common/middlewares/rateLimiter';
 
 const router = Router();
 

@@ -106,10 +106,12 @@ export const NotificationsPage: React.FC = () => {
       setHistoryItems(items);
     } catch (err) {
       console.error('Error fetching notification history:', err);
+      setHistoryItems([]);
+      toast.error('Unable to connect to notification server. Failed to load history.');
     } finally {
       setIsLoadingHistory(false);
     }
-  }, [activeChannel, historyTab, historySearch, currentPage]);
+  }, [activeChannel, historyTab, historySearch, currentPage, toast]);
 
   useEffect(() => {
     loadHistory();
@@ -157,8 +159,8 @@ export const NotificationsPage: React.FC = () => {
       setSelectedDepts({});
       toast.success('Message dispatched successfully and saved to backend!');
       await loadHistory();
-    } catch (err) {
-      toast.error('Failed to send message.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Server connection error. Failed to send message.');
     } finally {
       setIsSubmitting(false);
     }
@@ -185,8 +187,8 @@ export const NotificationsPage: React.FC = () => {
       setSelectedDepts({});
       toast.info('Draft saved successfully to backend!');
       await loadHistory();
-    } catch (err) {
-      toast.error('Failed to save draft.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Server connection error. Failed to save draft.');
     } finally {
       setIsSubmitting(false);
     }

@@ -2,8 +2,9 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { app } from '../src/app';
-import { NotificationModel } from '../src/models/Notification';
-import { NotificationChannel, NotificationStatus, RecipientType } from '../src/types/notification.types';
+import { NotificationModel } from '../src/modules/notification/notification.model';
+import { NotificationChannel, NotificationStatus, RecipientType } from '../src/modules/notification/notification.types';
+import { providerRegistry } from '../src/modules/notification/providers/index';
 
 let mongoServer: MongoMemoryServer;
 
@@ -22,6 +23,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await NotificationModel.deleteMany({});
+  jest.restoreAllMocks();
 });
 
 describe('Notification Backend API Integration Tests', () => {
@@ -200,6 +202,33 @@ describe('Notification Backend API Integration Tests', () => {
 
       const dbDoc = await NotificationModel.findById(doc.id);
       expect(dbDoc?.status).toBe(NotificationStatus.SENT);
+    });
+
+    it('should prevent duplicate notification sending when called multiple times on an already SENT notification', async () => {
+      const doc = await NotificationModel.create({
+        channel: NotificationChannel.EMAIL,
+        subject: 'Idempotency Test',
+        message: 'Idempotency message content',
+        recipients: 'All Employees',
+        recipientType: RecipientType.ALL_EMPLOYEES,
+        status: NotificationStatus.DRAFT,
+      });
+
+      const provider = providerRegistry.getProvider(NotificationChannel.EMAIL);
+      const sendSpy = jest.spyOn(provider, 'send');
+
+      // First send call
+      const res1 = await request(app).post(`/api/v1/notifications/${doc.id}/send`);
+      expect(res1.status).toBe(200);
+      expect(res1.body.data.status).toBe(NotificationStatus.SENT);
+      expect(sendSpy).toHaveBeenCalledTimes(1);
+
+      // Second send call on already SENT notification
+      const res2 = await request(app).post(`/api/v1/notifications/${doc.id}/send`);
+      expect(res2.status).toBe(200);
+      expect(res2.body.data.status).toBe(NotificationStatus.SENT);
+      // Provider send MUST NOT be called again
+      expect(sendSpy).toHaveBeenCalledTimes(1);
     });
   });
 
