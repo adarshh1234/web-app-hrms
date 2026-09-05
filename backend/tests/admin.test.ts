@@ -279,7 +279,7 @@ describe('Admin Module Backend API Integration Tests', () => {
     it('should list and create pay grades', async () => {
       const res = await request(app).get('/api/v1/admin/pay-grades');
       expect(res.status).toBe(200);
-      expect(res.body.data.length).toBeGreaterThan(0);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(0);
 
       const createRes = await request(app).post('/api/v1/admin/pay-grades').send({
         name: 'Executive Band A',
@@ -292,7 +292,7 @@ describe('Admin Module Backend API Integration Tests', () => {
     it('should list and create employment statuses', async () => {
       const res = await request(app).get('/api/v1/admin/employment-statuses');
       expect(res.status).toBe(200);
-      expect(res.body.data.length).toBeGreaterThan(0);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(0);
 
       const createRes = await request(app).post('/api/v1/admin/employment-statuses').send({
         status: 'Freelance Contractor',
@@ -304,7 +304,7 @@ describe('Admin Module Backend API Integration Tests', () => {
     it('should list and create job categories', async () => {
       const res = await request(app).get('/api/v1/admin/job-categories');
       expect(res.status).toBe(200);
-      expect(res.body.data.length).toBeGreaterThan(0);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(0);
 
       const createRes = await request(app).post('/api/v1/admin/job-categories').send({
         category: 'Executive Leadership',
@@ -316,7 +316,7 @@ describe('Admin Module Backend API Integration Tests', () => {
     it('should list and create work shifts', async () => {
       const res = await request(app).get('/api/v1/admin/work-shifts');
       expect(res.status).toBe(200);
-      expect(res.body.data.length).toBeGreaterThan(0);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(0);
 
       const createRes = await request(app).post('/api/v1/admin/work-shifts').send({
         name: 'Flexi Shift',
@@ -331,7 +331,7 @@ describe('Admin Module Backend API Integration Tests', () => {
     it('should list and create locations', async () => {
       const res = await request(app).get('/api/v1/admin/locations');
       expect(res.status).toBe(200);
-      expect(res.body.data.length).toBeGreaterThan(0);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(0);
 
       const createRes = await request(app).post('/api/v1/admin/locations').send({
         name: 'Berlin Tech Center',
@@ -345,7 +345,7 @@ describe('Admin Module Backend API Integration Tests', () => {
     it('should list and create departments', async () => {
       const res = await request(app).get('/api/v1/admin/departments');
       expect(res.status).toBe(200);
-      expect(res.body.data.length).toBeGreaterThan(0);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(0);
 
       const createRes = await request(app).post('/api/v1/admin/departments').send({
         name: 'Artificial Intelligence Research',

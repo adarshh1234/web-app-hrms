@@ -1,17 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Languages, Trash2, Download, Key } from 'lucide-react';
 import { useToast } from '../../../hooks/useToast';
 
 export const LanguagePackagesTab: React.FC = () => {
   const toast = useToast();
 
-  const langPackages = [
-    'Chinese (Simplified, China) - 中文 (简体, 中国)',
-    'Chinese (Traditional, Taiwan) - 中文 (繁體, 台灣)',
-    'Dutch - Nederlands',
-    'English (United States)',
-    'French - Français'
-  ];
+  const [langPackages, setLangPackages] = useState<string[]>([]);
 
   return (
     <div className="space-y-4 animate-fade-in">

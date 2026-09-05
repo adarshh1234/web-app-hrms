@@ -4,9 +4,7 @@ import { useToast } from '../../../hooks/useToast';
 
 export const OAuthClientsTab: React.FC = () => {
   const toast = useToast();
-  const [oauthClients, setOauthClients] = useState([
-    { id: '1', name: 'OrangeHRM Mobile App', redirectUri: 'com.orangehrm.opensource://oauthredirect', status: '1-876-267-6999' }
-  ]);
+  const [oauthClients, setOauthClients] = useState<any[]>([]);
 
   const handleDeleteOauth = (id: string) => {
     if (confirm("Delete OAuth client?")) {
