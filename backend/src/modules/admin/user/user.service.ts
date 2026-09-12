@@ -1,6 +1,7 @@
 import { userRepository, UserRepository } from './user.repository';
 import { IUser } from './user.model';
 import { AppError } from '../../../common/errors/AppError';
+import { escapeRegex } from '../../../common/utils/regex';
 
 export class UserService {
   constructor(private repo: UserRepository = userRepository) {}
@@ -20,8 +21,8 @@ export class UserService {
     const limit = query.limit || 50;
 
     const filter: any = {};
-    if (query.username) filter.username = { $regex: query.username, $options: 'i' };
-    if (query.empName) filter.empName = { $regex: query.empName, $options: 'i' };
+    if (query.username) filter.username = { $regex: escapeRegex(query.username), $options: 'i' };
+    if (query.empName) filter.empName = { $regex: escapeRegex(query.empName), $options: 'i' };
     if (query.role) filter.role = query.role;
     if (query.status) filter.status = query.status;
 

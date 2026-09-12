@@ -22,8 +22,10 @@ export const BrandingPage: React.FC = () => {
       if (b.secondaryColor) setSecondaryColor(b.secondaryColor);
       if (b.primaryFontColor) setPrimaryFontColor(b.primaryFontColor);
       if (b.secondaryFontColor) setSecondaryFontColor(b.secondaryFontColor);
-      if (b.primaryGradientColor1) setGradient1(b.primaryGradientColor1);
-      if (b.primaryGradientColor2) setGradient2(b.primaryGradientColor2);
+      if (b.gradient1) setGradient1(b.gradient1);
+      else if (b.primaryGradientColor1) setGradient1(b.primaryGradientColor1);
+      if (b.gradient2) setGradient2(b.gradient2);
+      else if (b.primaryGradientColor2) setGradient2(b.primaryGradientColor2);
     });
   }, []);
 
@@ -35,8 +37,9 @@ export const BrandingPage: React.FC = () => {
         secondaryColor,
         primaryFontColor,
         secondaryFontColor,
-        primaryGradientColor1: gradient1,
-        primaryGradientColor2: gradient2,
+        gradient1,
+        gradient2,
+        socialMediaToggled,
       });
       toast.success('Corporate Branding updated & persisted successfully!');
     } catch (err) {
@@ -59,8 +62,9 @@ export const BrandingPage: React.FC = () => {
       secondaryColor: '#f1f5f9',
       primaryFontColor: '#ffffff',
       secondaryFontColor: '#1e293b',
-      primaryGradientColor1: '#002222',
-      primaryGradientColor2: '#007878',
+      gradient1: '#002222',
+      gradient2: '#007878',
+      socialMediaToggled: true,
     });
     toast.info('Branding reset to default theme.');
   };

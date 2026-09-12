@@ -1,7 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { organizationService, OrganizationService } from './organization.service';
 import { sendResponse } from '../../../common/utils/apiResponse';
-import { updateOrganizationSchema, addLocationSchema } from './organization.validator';
+import {
+  updateOrganizationSchema,
+  addLocationSchema,
+  updateLocationSchema,
+  mongoIdSchema,
+} from './organization.validator';
 
 export class OrganizationController {
   constructor(private service: OrganizationService = organizationService) {}
@@ -49,9 +54,25 @@ export class OrganizationController {
     }
   };
 
+  updateLocation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = mongoIdSchema.parse(req.params.id);
+      const validated = updateLocationSchema.parse(req.body);
+      const org = await this.service.updateLocation(id, validated);
+      sendResponse({
+        res,
+        statusCode: 200,
+        message: 'Location updated successfully',
+        data: org,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   removeLocation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const id = String(req.params.id);
+      const id = mongoIdSchema.parse(req.params.id);
       const org = await this.service.removeLocation(id);
       sendResponse({
         res,

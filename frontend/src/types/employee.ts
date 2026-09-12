@@ -8,16 +8,18 @@ export interface Employee {
   subUnit: string;
   location: string;
   supervisor: string;
-  employmentStatus: 'Full-Time' | 'Part-Time' | 'Contract' | 'Onboarding';
-  attendanceStatus: 'Present' | 'Late' | 'On-Leave';
+  employmentStatus: 'Freelance' | 'Full-Time Contract' | 'Full-Time Permanent' | 'Full-Time Probation' | 'Part-Time Contract' | 'Part-Time Internship' | string;
+  attendanceStatus: 'Present' | 'Late' | 'On-Leave' | string;
+  avatar?: string;
+  isTerminated?: boolean;
   // ESS details
   otherId?: string;
   licenseNumber?: string;
   licenseExpiry?: string;
   nationality?: string;
-  maritalStatus?: 'Single' | 'Married' | 'Divorced' | 'Other';
+  maritalStatus?: 'Single' | 'Married' | 'Divorced' | 'Other' | string;
   dob?: string;
-  gender?: 'Male' | 'Female' | 'Other';
+  gender?: 'Male' | 'Female' | 'Other' | string;
   bloodType?: string;
   customField?: string;
 }

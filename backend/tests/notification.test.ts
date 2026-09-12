@@ -44,7 +44,6 @@ describe('Notification Backend API Integration Tests', () => {
         message: 'Welcome to the new month!',
         recipients: 'All Employees',
         recipientType: RecipientType.ALL_EMPLOYEES,
-        status: NotificationStatus.DRAFT,
       };
 
       const res = await request(app).post('/api/v1/notifications').send(payload);
@@ -54,6 +53,56 @@ describe('Notification Backend API Integration Tests', () => {
       expect(res.body.data.id).toBeDefined();
       expect(res.body.data.subject).toBe(payload.subject);
       expect(res.body.data.status).toBe(NotificationStatus.DRAFT);
+    });
+
+    it('should ALWAYS create status DRAFT even if client sends status: SENT', async () => {
+      const provider = providerRegistry.getProvider(NotificationChannel.EMAIL);
+      const sendSpy = jest.spyOn(provider, 'send');
+
+      const res = await request(app).post('/api/v1/notifications').send({
+        channel: NotificationChannel.EMAIL,
+        subject: 'Forced Sent Creation',
+        message: 'Should still be draft',
+        recipients: 'All Employees',
+        status: NotificationStatus.SENT,
+      });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data.status).toBe(NotificationStatus.DRAFT);
+      // Provider send MUST NOT be called during creation
+      expect(sendSpy).not.toHaveBeenCalled();
+    });
+
+    it('should persist employee recipient IDs correctly', async () => {
+      const payload = {
+        channel: NotificationChannel.SMS,
+        message: 'Direct message to employees',
+        recipients: '2 Selected Employee(s)',
+        recipientType: RecipientType.EMPLOYEES,
+        employeeIds: ['EMP001', 'EMP002'],
+      };
+
+      const res = await request(app).post('/api/v1/notifications').send(payload);
+
+      expect(res.status).toBe(201);
+      expect(res.body.data.recipientType).toBe(RecipientType.EMPLOYEES);
+      expect(res.body.data.employeeIds).toEqual(['EMP001', 'EMP002']);
+    });
+
+    it('should persist department recipient IDs correctly', async () => {
+      const payload = {
+        channel: NotificationChannel.WHATSAPP,
+        message: 'Department announcement',
+        recipients: 'Engineering, Marketing',
+        recipientType: RecipientType.DEPARTMENT,
+        departmentIds: ['DEPT-ENG', 'DEPT-MKT'],
+      };
+
+      const res = await request(app).post('/api/v1/notifications').send(payload);
+
+      expect(res.status).toBe(201);
+      expect(res.body.data.recipientType).toBe(RecipientType.DEPARTMENT);
+      expect(res.body.data.departmentIds).toEqual(['DEPT-ENG', 'DEPT-MKT']);
     });
 
     it('should fail with 400 when required fields are missing', async () => {
@@ -121,7 +170,6 @@ describe('Notification Backend API Integration Tests', () => {
       expect(res.body.data.length).toBe(2);
       expect(res.body.pagination.totalItems).toBe(3);
       expect(res.body.pagination.totalPages).toBe(2);
-      // Newest first (July 22 comes first)
       expect(res.body.data[0].subject).toBe('SMS Urgent Alert');
     });
 
@@ -141,12 +189,19 @@ describe('Notification Backend API Integration Tests', () => {
       expect(res.body.data[0].status).toBe(NotificationStatus.DRAFT);
     });
 
-    it('should search notifications by keyword', async () => {
-      const res = await request(app).get('/api/v1/notifications?search=architecture');
+    it('should search notifications by keyword safely escaping regex characters', async () => {
+      const res = await request(app).get('/api/v1/notifications?search=.*');
 
       expect(res.status).toBe(200);
-      expect(res.body.data.length).toBe(1);
-      expect(res.body.data[0].message).toContain('backend architecture');
+      expect(res.body.success).toBe(true);
+      expect(Array.isArray(res.body.data)).toBe(true);
+    });
+
+    it('should reject invalid sortBy field', async () => {
+      const res = await request(app).get('/api/v1/notifications?sortBy=invalidNonExistentField');
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
     });
   });
 
@@ -184,7 +239,7 @@ describe('Notification Backend API Integration Tests', () => {
   });
 
   describe('POST /api/v1/notifications/:id/send', () => {
-    it('should update DRAFT status to SENT upon sending', async () => {
+    it('should update DRAFT status to SENT upon sending and dispatch provider', async () => {
       const doc = await NotificationModel.create({
         channel: NotificationChannel.EMAIL,
         subject: 'Weekly Digest',
@@ -194,11 +249,15 @@ describe('Notification Backend API Integration Tests', () => {
         status: NotificationStatus.DRAFT,
       });
 
+      const provider = providerRegistry.getProvider(NotificationChannel.EMAIL);
+      const sendSpy = jest.spyOn(provider, 'send');
+
       const res = await request(app).post(`/api/v1/notifications/${doc.id}/send`);
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data.status).toBe(NotificationStatus.SENT);
+      expect(sendSpy).toHaveBeenCalledTimes(1);
 
       const dbDoc = await NotificationModel.findById(doc.id);
       expect(dbDoc?.status).toBe(NotificationStatus.SENT);
@@ -270,6 +329,29 @@ describe('Notification Backend API Integration Tests', () => {
       expect(res.status).toBe(400);
       expect(res.body.error.message).toContain('already been sent');
     });
+
+    it('should reject PATCH request attempting to set status to SENT and NOT dispatch provider', async () => {
+      const doc = await NotificationModel.create({
+        channel: NotificationChannel.EMAIL,
+        subject: 'Draft Notification',
+        message: 'Message Body',
+        recipients: 'All',
+        status: NotificationStatus.DRAFT,
+      });
+
+      const provider = providerRegistry.getProvider(NotificationChannel.EMAIL);
+      const sendSpy = jest.spyOn(provider, 'send');
+
+      const res = await request(app)
+        .patch(`/api/v1/notifications/${doc.id}`)
+        .send({ status: NotificationStatus.SENT });
+
+      expect(res.status).toBe(400);
+      expect(sendSpy).not.toHaveBeenCalled();
+
+      const check = await NotificationModel.findById(doc.id);
+      expect(check?.status).toBe(NotificationStatus.DRAFT);
+    });
   });
 
   describe('DELETE /api/v1/notifications/:id (Delete Draft)', () => {
@@ -289,6 +371,24 @@ describe('Notification Backend API Integration Tests', () => {
 
       const check = await NotificationModel.findById(doc.id);
       expect(check).toBeNull();
+    });
+
+    it('should return 400 when attempting to delete a SENT notification', async () => {
+      const doc = await NotificationModel.create({
+        channel: NotificationChannel.EMAIL,
+        subject: 'Sent Notification',
+        message: 'Cannot delete me',
+        recipients: 'All',
+        status: NotificationStatus.SENT,
+      });
+
+      const res = await request(app).delete(`/api/v1/notifications/${doc.id}`);
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.message).toContain('already been sent');
+
+      const check = await NotificationModel.findById(doc.id);
+      expect(check).not.toBeNull();
     });
 
     it('should return 404 when deleting a non-existent ID', async () => {

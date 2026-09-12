@@ -1,5 +1,6 @@
 import React from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
+import ResumeTab from './components/ResumeTab';
 import CvParserTab from './components/CvParserTab';
 import PostJobTab from './components/PostJobTab';
 import TrackApplicantsTab from './components/TrackApplicantsTab';
@@ -11,8 +12,12 @@ import PostInLetgetinTab from './components/PostInLetgetinTab';
 
 export const RecruitmentPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab') || 'vacancies';
+  const location = useLocation();
+  const tabParam = location.pathname.includes('/resume')
+    ? 'resume'
+    : searchParams.get('tab') || 'resume';
   const activeTab = tabParam as
+    | 'resume'
     | 'onboarding'
     | 'offboarding'
     | 'cv-parser'
@@ -24,7 +29,7 @@ export const RecruitmentPage: React.FC = () => {
     | 'vacancies'
     | 'post-letgetin';
 
-  const hideHeader = ['cv-parser', 'post-job', 'track', 'talent-pool', 'feedback', 'candidates', 'vacancies', 'post-letgetin'].includes(activeTab);
+  const hideHeader = ['resume', 'cv-parser', 'post-job', 'track', 'talent-pool', 'feedback', 'candidates', 'vacancies', 'post-letgetin'].includes(activeTab);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -41,6 +46,7 @@ export const RecruitmentPage: React.FC = () => {
         </div>
       )}
 
+      {activeTab === 'resume' && <ResumeTab />}
       {activeTab === 'cv-parser' && <CvParserTab />}
       {activeTab === 'post-job' && <PostJobTab />}
       {activeTab === 'track' && <TrackApplicantsTab />}

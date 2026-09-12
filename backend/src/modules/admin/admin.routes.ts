@@ -22,8 +22,6 @@ const handlePurge = async (_req: any, res: any, next: any) => {
 };
 
 router.delete('/purge-admin-data', handlePurge);
-router.post('/purge-admin-data', handlePurge);
-router.get('/purge-admin-data', handlePurge);
 
 router.use('/users', userRoutes);
 router.use('/job-titles', jobTitleRoutes);

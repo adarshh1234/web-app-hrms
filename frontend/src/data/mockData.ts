@@ -612,8 +612,10 @@ export const getBranding = (): CorporateBranding => {
       primaryFontColor: "#ffffff",
       secondaryColor: "#f1f5f9",
       secondaryFontColor: "#1e293b",
+      gradient1: "#002222",
+      gradient2: "#007878",
       primaryGradientColor1: "#002222",
-      primaryGradientColor2: "#007878"
+      primaryGradientColor2: "#007878",
     };
   }
   return item;
@@ -623,11 +625,13 @@ export const saveBranding = (branding: CorporateBranding) => {
   setStorageItem('hr_branding', branding);
   // Dynamically apply to document element
   const root = document.documentElement;
-  root.style.setProperty('--primary-color', branding.primaryColor);
-  root.style.setProperty('--primary-hover', branding.primaryHoverColor);
-  root.style.setProperty('--primary-font-color', branding.primaryFontColor);
-  root.style.setProperty('--secondary-color', branding.secondaryColor);
-  root.style.setProperty('--secondary-font-color', branding.secondaryFontColor);
-  root.style.setProperty('--primary-gradient-1', branding.primaryGradientColor1);
-  root.style.setProperty('--primary-gradient-2', branding.primaryGradientColor2);
+  if (branding.primaryColor) root.style.setProperty('--primary-color', branding.primaryColor);
+  if (branding.primaryHoverColor) root.style.setProperty('--primary-hover', branding.primaryHoverColor);
+  if (branding.primaryFontColor) root.style.setProperty('--primary-font-color', branding.primaryFontColor);
+  if (branding.secondaryColor) root.style.setProperty('--secondary-color', branding.secondaryColor);
+  if (branding.secondaryFontColor) root.style.setProperty('--secondary-font-color', branding.secondaryFontColor);
+  const g1 = branding.gradient1 || branding.primaryGradientColor1;
+  if (g1) root.style.setProperty('--primary-gradient-1', g1);
+  const g2 = branding.gradient2 || branding.primaryGradientColor2;
+  if (g2) root.style.setProperty('--primary-gradient-2', g2);
 };

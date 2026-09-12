@@ -1,11 +1,17 @@
 export interface CorporateBranding {
   primaryColor: string;
-  primaryHoverColor: string;
-  primaryFontColor: string;
   secondaryColor: string;
+  primaryFontColor: string;
   secondaryFontColor: string;
-  primaryGradientColor1: string;
-  primaryGradientColor2: string;
+  gradient1: string;
+  gradient2: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+  loginBannerUrl?: string;
+  socialMediaToggled?: boolean;
+  primaryHoverColor?: string;
+  primaryGradientColor1?: string;
+  primaryGradientColor2?: string;
   clientLogo?: string;
   loginBanner?: string;
   clientBanner?: string;

@@ -116,10 +116,16 @@ export interface ConfigurationData {
 
 const DEFAULT_BRANDING: CorporateBranding = {
   primaryColor: '#004848',
-  primaryHoverColor: '#003333',
-  primaryFontColor: '#ffffff',
   secondaryColor: '#f1f5f9',
+  primaryFontColor: '#ffffff',
   secondaryFontColor: '#1e293b',
+  gradient1: '#002222',
+  gradient2: '#007878',
+  logoUrl: '',
+  bannerUrl: '',
+  loginBannerUrl: '',
+  socialMediaToggled: true,
+  primaryHoverColor: '#003333',
   primaryGradientColor1: '#002222',
   primaryGradientColor2: '#007878',
 };
@@ -471,6 +477,17 @@ export const adminService = {
     return json.data;
   },
 
+  async updateOrganizationLocation(locationId: string, locationData: any): Promise<OrganizationData> {
+    const res = await fetch(`${ADMIN_API_BASE}/organizations/locations/${locationId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(locationData),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to update location`);
+    const json = await res.json();
+    return json.data;
+  },
+
   async removeOrganizationLocation(locationId: string): Promise<OrganizationData> {
     const res = await fetch(`${ADMIN_API_BASE}/organizations/locations/${locationId}`, { method: 'DELETE' });
     if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to remove location`);
@@ -580,12 +597,14 @@ export const adminService = {
       const res = await fetch(`${ADMIN_API_BASE}/branding`);
       if (!res.ok) return DEFAULT_BRANDING;
       const json = await res.json();
+      const data = json.data || {};
       return {
         ...DEFAULT_BRANDING,
-        ...json.data,
-        primaryHoverColor: json.data?.primaryHoverColor || DEFAULT_BRANDING.primaryHoverColor,
-        primaryGradientColor1: json.data?.gradient1 || DEFAULT_BRANDING.primaryGradientColor1,
-        primaryGradientColor2: json.data?.gradient2 || DEFAULT_BRANDING.primaryGradientColor2,
+        ...data,
+        gradient1: data.gradient1 || data.primaryGradientColor1 || DEFAULT_BRANDING.gradient1,
+        gradient2: data.gradient2 || data.primaryGradientColor2 || DEFAULT_BRANDING.gradient2,
+        primaryGradientColor1: data.gradient1 || data.primaryGradientColor1 || DEFAULT_BRANDING.gradient1,
+        primaryGradientColor2: data.gradient2 || data.primaryGradientColor2 || DEFAULT_BRANDING.gradient2,
       };
     } catch (err) {
       return DEFAULT_BRANDING;
@@ -593,16 +612,33 @@ export const adminService = {
   },
 
   async updateBranding(payload: Partial<CorporateBranding>): Promise<CorporateBranding> {
-    this.applyBrandingToDOM(payload);
+    const body: Partial<CorporateBranding> = {
+      ...payload,
+      gradient1: payload.gradient1 || payload.primaryGradientColor1,
+      gradient2: payload.gradient2 || payload.primaryGradientColor2,
+      logoUrl: payload.logoUrl ?? payload.clientLogo,
+      bannerUrl: payload.bannerUrl ?? payload.clientBanner,
+      loginBannerUrl: payload.loginBannerUrl ?? payload.loginBanner,
+    };
+
+    this.applyBrandingToDOM(body);
     try {
       const res = await fetch(`${ADMIN_API_BASE}/branding`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(body),
       });
       if (!res.ok) return { ...DEFAULT_BRANDING, ...payload };
       const json = await res.json();
-      return { ...DEFAULT_BRANDING, ...json.data };
+      const data = json.data || {};
+      return {
+        ...DEFAULT_BRANDING,
+        ...data,
+        gradient1: data.gradient1 || data.primaryGradientColor1 || DEFAULT_BRANDING.gradient1,
+        gradient2: data.gradient2 || data.primaryGradientColor2 || DEFAULT_BRANDING.gradient2,
+        primaryGradientColor1: data.gradient1 || data.primaryGradientColor1 || DEFAULT_BRANDING.gradient1,
+        primaryGradientColor2: data.gradient2 || data.primaryGradientColor2 || DEFAULT_BRANDING.gradient2,
+      };
     } catch (err) {
       return { ...DEFAULT_BRANDING, ...payload };
     }
@@ -615,6 +651,10 @@ export const adminService = {
     if (branding.secondaryColor) root.style.setProperty('--secondary-color', branding.secondaryColor);
     if (branding.primaryFontColor) root.style.setProperty('--primary-font-color', branding.primaryFontColor);
     if (branding.secondaryFontColor) root.style.setProperty('--secondary-font-color', branding.secondaryFontColor);
+    const g1 = branding.gradient1 || branding.primaryGradientColor1;
+    if (g1) root.style.setProperty('--primary-gradient-1', g1);
+    const g2 = branding.gradient2 || branding.primaryGradientColor2;
+    if (g2) root.style.setProperty('--primary-gradient-2', g2);
   },
 
   // 7. SYSTEM CONFIGURATION

@@ -1,4 +1,5 @@
 import { JobTitleModel, IJobTitle } from './jobTitle.model';
+import { escapeRegex } from '../../../common/utils/regex';
 
 export class JobTitleRepository {
   async create(data: Partial<IJobTitle>): Promise<IJobTitle> {
@@ -11,7 +12,7 @@ export class JobTitleRepository {
   }
 
   async findByTitle(title: string): Promise<IJobTitle | null> {
-    return await JobTitleModel.findOne({ title: { $regex: `^${title}$`, $options: 'i' } });
+    return await JobTitleModel.findOne({ title: { $regex: `^${escapeRegex(title)}$`, $options: 'i' } });
   }
 
   async findAll(filter: any = {}, sort: any = { title: 1 }): Promise<IJobTitle[]> {

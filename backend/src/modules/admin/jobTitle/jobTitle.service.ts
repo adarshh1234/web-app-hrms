@@ -1,6 +1,7 @@
 import { jobTitleRepository, JobTitleRepository } from './jobTitle.repository';
 import { IJobTitle } from './jobTitle.model';
 import { AppError } from '../../../common/errors/AppError';
+import { escapeRegex } from '../../../common/utils/regex';
 
 export class JobTitleService {
   constructor(private repo: JobTitleRepository = jobTitleRepository) {}
@@ -18,7 +19,7 @@ export class JobTitleService {
   async getJobTitles(query: any): Promise<IJobTitle[]> {
     const filter: any = {};
     if (query.search) {
-      filter.title = { $regex: query.search, $options: 'i' };
+      filter.title = { $regex: escapeRegex(query.search), $options: 'i' };
     }
     if (query.status) {
       filter.status = query.status;

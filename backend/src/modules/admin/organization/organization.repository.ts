@@ -1,4 +1,5 @@
-import { OrganizationModel, IOrganization } from './organization.model';
+import { OrganizationModel, IOrganization, IOrganizationLocation } from './organization.model';
+import { AppError } from '../../../common/errors/AppError';
 
 export class OrganizationRepository {
   async getOrganization(): Promise<IOrganization> {
@@ -36,6 +37,21 @@ export class OrganizationRepository {
   async addLocation(locationData: any): Promise<IOrganization> {
     const org = await this.getOrganization();
     org.locations.push(locationData);
+    return await org.save();
+  }
+
+  async updateLocation(locationId: string, locationData: Partial<IOrganizationLocation>): Promise<IOrganization> {
+    const org = await this.getOrganization();
+    const locIndex = org.locations.findIndex(
+      (loc: any) => loc._id?.toString() === locationId || loc.id?.toString() === locationId
+    );
+    if (locIndex === -1) {
+      throw AppError.notFound(`Location with ID '${locationId}' not found in organization`);
+    }
+    const currentLoc = org.locations[locIndex];
+    Object.assign(currentLoc, locationData);
+    org.locations[locIndex] = currentLoc;
+    org.markModified('locations');
     return await org.save();
   }
 

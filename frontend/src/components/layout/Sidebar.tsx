@@ -177,7 +177,19 @@ const SidebarNavGroup: React.FC<SidebarNavGroupProps> = ({
   items,
   location
 }) => {
-  const isActiveGroup = isChildActive || isGroupActive;
+  const isAnyItemActive = items.some(sub => {
+    if (sub.isCustomActive) {
+      return sub.isCustomActive(location.pathname, location.search);
+    }
+    if (sub.children && sub.children.length > 0) {
+      return sub.children.some(c => 
+        c.isCustomActive ? c.isCustomActive(location.pathname, location.search) : (c.path && location.pathname === c.path)
+      );
+    }
+    return sub.path && (location.pathname + location.search === sub.path || location.pathname === sub.path);
+  });
+
+  const isActiveGroup = isAnyItemActive || (isChildActive && isGroupActive);
 
   return (
     <div className="w-full">
@@ -233,6 +245,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
     adminGroup: false,
     selfServiceGroup: false,
     recruitmentGroup: false,
+    recruitmentMainGroup: true,
     performance: false,
     maintenanceGroup: false,
     supportGroup: false,
@@ -449,13 +462,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
             label="Recruitment"
             icon={UserPlus}
             groupKey="recruitmentMainGroup"
-            isGroupActive={isRecruitmentActive}
-            isChildActive={isRecruitmentChildActive}
+            isGroupActive={false}
+            isChildActive={false}
             isOpen={isOpen}
             isExpanded={expandedGroups.recruitmentMainGroup}
             onToggle={toggleGroup}
             location={location}
             items={[
+              { name: 'Resume', path: '/recruitment?tab=resume', isCustomActive: (p, s) => p.startsWith('/recruitment') && (s === '?tab=resume' || s === '' || p === '/recruitment/resume') },
               { name: 'AI Cv Parser', path: '/recruitment?tab=cv-parser', isCustomActive: (_, s) => s === '?tab=cv-parser' },
               { name: 'Post a Job', path: '/recruitment?tab=post-job', isCustomActive: (_, s) => s === '?tab=post-job' },
               { name: 'Track Applicant', path: '/recruitment?tab=track', isCustomActive: (_, s) => s === '?tab=track' },
@@ -463,6 +477,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
               { name: 'Feedback and Interview form', path: '/recruitment?tab=feedback', isCustomActive: (_, s) => s === '?tab=feedback' },
               { name: 'Candidate', path: '/recruitment?tab=candidates', isCustomActive: (p, s) => s === '?tab=candidates' },
               { name: 'Vacancy', path: '/recruitment?tab=vacancies', isCustomActive: (_, s) => s === '?tab=vacancies' }
+            ]}
+          />
+
+          {/* Recruitment Pipeline */}
+          <SidebarNavGroup
+            label="Recruitment Pipeline"
+            icon={UserPlus}
+            groupKey="recruitmentGroup"
+            isGroupActive={false}
+            isChildActive={false}
+            isOpen={isOpen}
+            isExpanded={expandedGroups.recruitmentGroup}
+            onToggle={toggleGroup}
+            location={location}
+            items={[
+              { name: 'Vacancies', path: '/recruitment?tab=vacancies', isCustomActive: (p, s) => s === '?tab=vacancies' },
+              { name: 'Talent Pool', path: '/recruitment?tab=talent-pool', isCustomActive: (_, s) => s === '?tab=talent-pool' },
+              { name: 'Create Job', path: '/recruitment?tab=post-letgetin', isCustomActive: (_, s) => s === '?tab=post-letgetin' },
+              { name: 'Post in letgetin', path: '/recruitment?tab=post-letgetin', isCustomActive: (_, s) => s === '?tab=post-letgetin' }
             ]}
           />
 
@@ -539,46 +572,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
             ]}
           />
 
-          {/* Recruitment Pipeline */}
-          <SidebarNavGroup
-            label="Recruitment Pipeline"
-            icon={UserPlus}
-            groupKey="recruitmentGroup"
-            isGroupActive={isRecruitmentActive}
-            isChildActive={isRecruitmentChildActive}
-            isOpen={isOpen}
-            isExpanded={expandedGroups.recruitmentGroup}
-            onToggle={toggleGroup}
-            location={location}
-            items={[
-              { name: 'Vacancies', path: '/recruitment?tab=vacancies', isCustomActive: (p, s) => s === '?tab=vacancies' || (p === '/recruitment' && s === '') },
-              { name: 'Talent Pool', path: '/recruitment?tab=talent-pool', isCustomActive: (_, s) => s === '?tab=talent-pool' },
-              { name: 'Create Job', path: '/recruitment?tab=post-job', isCustomActive: (_, s) => s === '?tab=post-job' },
-              { name: 'Post in letgetin', path: '/recruitment?tab=post-letgetin', isCustomActive: (_, s) => s === '?tab=post-letgetin' }
-            ]}
-          />
-
-          {/* Events */}
-          <SidebarNavGroup
-            label="Events"
-            icon={Calendar}
-            groupKey="eventsGroup"
-            isGroupActive={isEventsActive}
-            isChildActive={isEventsChildActive}
-            isOpen={isOpen}
-            isExpanded={expandedGroups.eventsGroup}
-            onToggle={toggleGroup}
-            location={location}
-            items={[
-              { name: 'All Events', path: '/events/all' },
-              { name: 'Support Events', path: '/events/support' },
-              { name: 'Events news letter', path: '/events/newsletter' },
-              { name: 'add/Mange Events', path: '/events/add' },
-              { name: 'Events Callender', path: '/events/calendar' },
-              { name: 'Budget', path: '/events/budget' }
-            ]}
-          />
-
           {/* Performance appraisal */}
           <SidebarNavGroup
             label="Performance appraisal"
@@ -616,6 +609,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobileOpen,
             location={location}
             items={[
               { name: 'Memo', path: '/hr-letters-memos/memo' }
+            ]}
+          />
+
+          {/* Events */}
+          <SidebarNavGroup
+            label="Events"
+            icon={Calendar}
+            groupKey="eventsGroup"
+            isGroupActive={isEventsActive}
+            isChildActive={isEventsChildActive}
+            isOpen={isOpen}
+            isExpanded={expandedGroups.eventsGroup}
+            onToggle={toggleGroup}
+            location={location}
+            items={[
+              { name: 'All Events', path: '/events/all' },
+              { name: 'Support Events', path: '/events/support' },
+              { name: 'Events news letter', path: '/events/newsletter' },
+              { name: 'add/Mange Events', path: '/events/add' },
+              { name: 'Events Callender', path: '/events/calendar' },
+              { name: 'Budget', path: '/events/budget' }
             ]}
           />
 

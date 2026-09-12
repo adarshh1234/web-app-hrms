@@ -12,6 +12,8 @@ export const CorporateBrandingTab: React.FC = () => {
     primaryFontColor: '#ffffff',
     secondaryColor: '#f1f5f9',
     secondaryFontColor: '#1e293b',
+    gradient1: '#002222',
+    gradient2: '#007878',
     primaryGradientColor1: '#002222',
     primaryGradientColor2: '#007878'
   });
@@ -33,6 +35,8 @@ export const CorporateBrandingTab: React.FC = () => {
       primaryFontColor: '#ffffff',
       secondaryColor: '#f1f5f9',
       secondaryFontColor: '#1e293b',
+      gradient1: '#002222',
+      gradient2: '#007878',
       primaryGradientColor1: '#002222',
       primaryGradientColor2: '#007878'
     };

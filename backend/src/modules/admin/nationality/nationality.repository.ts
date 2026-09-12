@@ -1,4 +1,5 @@
 import { NationalityModel, INationality } from './nationality.model';
+import { escapeRegex } from '../../../common/utils/regex';
 
 export class NationalityRepository {
   async create(data: Partial<INationality>): Promise<INationality> {
@@ -11,7 +12,7 @@ export class NationalityRepository {
   }
 
   async findByName(name: string): Promise<INationality | null> {
-    return await NationalityModel.findOne({ name: { $regex: `^${name}$`, $options: 'i' } });
+    return await NationalityModel.findOne({ name: { $regex: `^${escapeRegex(name)}$`, $options: 'i' } });
   }
 
   async findAll(filter: any = {}, options: { page: number; limit: number } = { page: 1, limit: 50 }): Promise<{ items: INationality[]; total: number }> {

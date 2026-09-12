@@ -1,4 +1,10 @@
 import { z } from 'zod';
+import mongoose from 'mongoose';
+
+export const mongoIdSchema = z.string().refine(
+  (val) => mongoose.Types.ObjectId.isValid(val),
+  { message: 'Invalid ID format' }
+);
 
 export const updateOrganizationSchema = z.object({
   name: z.string().min(1, 'Organization name is required').optional(),
@@ -24,3 +30,5 @@ export const addLocationSchema = z.object({
   phone: z.string().optional().default(''),
   employees: z.number().optional().default(1),
 });
+
+export const updateLocationSchema = addLocationSchema.partial();

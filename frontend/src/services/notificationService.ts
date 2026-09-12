@@ -69,7 +69,7 @@ export const notificationService = {
   },
 
   /**
-   * Create a new notification (Draft or Sent) in backend
+   * Create a new notification (always creates DRAFT in backend)
    */
   async createNotification(payload: {
     channel: string;
@@ -77,6 +77,8 @@ export const notificationService = {
     message: string;
     recipients: string;
     recipientType?: 'ALL_EMPLOYEES' | 'DEPARTMENT' | 'EMPLOYEES';
+    departmentIds?: string[];
+    employeeIds?: string[];
     status?: 'DRAFT' | 'SENT';
   }): Promise<BackendNotification> {
     const backendChannel = this.mapChannelToBackend(payload.channel);
@@ -86,7 +88,9 @@ export const notificationService = {
       message: payload.message,
       recipients: payload.recipients || 'All Employees',
       recipientType: payload.recipientType || 'ALL_EMPLOYEES',
-      status: payload.status || 'SENT',
+      departmentIds: payload.departmentIds || [],
+      employeeIds: payload.employeeIds || [],
+      status: 'DRAFT',
     };
 
     try {

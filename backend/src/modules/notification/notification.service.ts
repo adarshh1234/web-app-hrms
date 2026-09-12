@@ -8,19 +8,15 @@ export class NotificationService {
   constructor(private repo: NotificationRepository = notificationRepository) {}
 
   async createNotification(data: Partial<INotification>, user?: { id?: string; name?: string }): Promise<INotificationDocument> {
+    // Enforce status = DRAFT on creation regardless of client input
     const payload: Partial<INotification> = {
       ...data,
+      status: NotificationStatus.DRAFT,
       createdBy: user?.name || user?.id || data.createdBy || 'System User',
     };
 
     const created = await this.repo.create(payload);
-
-    // If status is SENT upon creation, trigger provider dispatch
-    if (created.status === NotificationStatus.SENT) {
-      const provider = providerRegistry.getProvider(created.channel);
-      await provider.send(created);
-    }
-
+    // Creation never dispatches to provider
     return created;
   }
 
@@ -76,16 +72,23 @@ export class NotificationService {
       throw AppError.notFound(`Notification with ID '${id}' not found`);
     }
 
-    if (existing.status === NotificationStatus.SENT && updateData.status !== NotificationStatus.DRAFT) {
+    // A SENT notification cannot be modified or changed back to DRAFT
+    if (existing.status === NotificationStatus.SENT) {
       throw AppError.badRequest('Cannot modify a notification that has already been sent');
     }
 
-    // If status is being transitioned to SENT via update
-    if (updateData.status === NotificationStatus.SENT && existing.status !== NotificationStatus.SENT) {
-      return await this.sendNotification(id);
+    // Generic update / PATCH must not transition notification to SENT
+    if (updateData.status === NotificationStatus.SENT) {
+      throw AppError.badRequest('Cannot set status to SENT via update. Use /send endpoint instead');
     }
 
-    const updated = await this.repo.updateById(id, updateData);
+    // Ensure status remains DRAFT if updating a draft
+    const payload = {
+      ...updateData,
+      status: NotificationStatus.DRAFT,
+    };
+
+    const updated = await this.repo.updateById(id, payload);
     if (!updated) {
       throw AppError.internal('Failed to update notification');
     }
@@ -97,6 +100,11 @@ export class NotificationService {
     const existing = await this.repo.findById(id);
     if (!existing) {
       throw AppError.notFound(`Notification with ID '${id}' not found`);
+    }
+
+    // SENT notifications cannot be deleted
+    if (existing.status === NotificationStatus.SENT) {
+      throw AppError.badRequest('Cannot delete a notification that has already been sent');
     }
 
     const deleted = await this.repo.deleteById(id);

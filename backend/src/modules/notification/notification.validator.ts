@@ -29,7 +29,7 @@ export const queryNotificationSchema = z.object({
   search: z.string().optional(),
   channel: z.nativeEnum(NotificationChannel).optional(),
   status: z.nativeEnum(NotificationStatus).optional(),
-  sortBy: z.string().optional().default('createdAt'),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'channel', 'status', 'recipientType', 'subject']).optional().default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
 });
 

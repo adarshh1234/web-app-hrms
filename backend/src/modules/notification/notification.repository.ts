@@ -1,6 +1,7 @@
 import { FilterQuery } from 'mongoose';
 import { NotificationModel, INotificationDocument } from './notification.model';
 import { INotification, INotificationQuery, IPaginatedResult, NotificationStatus } from './notification.types';
+import { escapeRegex } from '../../common/utils/regex';
 
 export class NotificationRepository {
   async create(data: Partial<INotification>): Promise<INotificationDocument> {
@@ -48,7 +49,7 @@ export class NotificationRepository {
     }
 
     if (query.search && query.search.trim() !== '') {
-      const searchRegex = new RegExp(query.search.trim(), 'i');
+      const searchRegex = new RegExp(escapeRegex(query.search.trim()), 'i');
       filter.$or = [
         { subject: searchRegex },
         { message: searchRegex },

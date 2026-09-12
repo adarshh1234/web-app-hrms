@@ -31,8 +31,15 @@ export const messagingService = {
       subject: data.subject,
       message: data.message,
       recipients: data.recipients,
-      status: data.status === 'Draft' ? 'DRAFT' : 'SENT',
+      recipientType: 'ALL_EMPLOYEES',
+      status: 'DRAFT',
     });
+
+    let finalStatus: 'DRAFT' | 'SENT' = 'DRAFT';
+    if (data.status !== 'Draft') {
+      const sent = await notificationService.sendNotification(created.id);
+      finalStatus = sent.status;
+    }
 
     let chan: MessageLog['channel'] = 'Email';
     if (created.channel === 'SMS') chan = 'SMS';
@@ -48,7 +55,7 @@ export const messagingService = {
       dateSent: created.createdAt
         ? new Date(created.createdAt).toISOString().split('T')[0]
         : new Date().toISOString().split('T')[0],
-      status: created.status === 'DRAFT' ? 'Draft' : 'Sent',
+      status: finalStatus === 'DRAFT' ? 'Draft' : 'Sent',
       replies: 0,
     };
   },

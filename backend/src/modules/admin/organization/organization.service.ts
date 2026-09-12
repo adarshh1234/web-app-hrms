@@ -1,5 +1,5 @@
 import { organizationRepository, OrganizationRepository } from './organization.repository';
-import { IOrganization } from './organization.model';
+import { IOrganization, IOrganizationLocation } from './organization.model';
 
 export class OrganizationService {
   constructor(private repo: OrganizationRepository = organizationRepository) {}
@@ -14,6 +14,10 @@ export class OrganizationService {
 
   async addLocation(locationData: any): Promise<IOrganization> {
     return await this.repo.addLocation(locationData);
+  }
+
+  async updateLocation(locationId: string, locationData: Partial<IOrganizationLocation>): Promise<IOrganization> {
+    return await this.repo.updateLocation(locationId, locationData);
   }
 
   async removeLocation(locationId: string): Promise<IOrganization> {

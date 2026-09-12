@@ -11,6 +11,8 @@ router.route('/locations')
   .post(organizationController.addLocation);
 
 router.route('/locations/:id')
+  .patch(organizationController.updateLocation)
+  .put(organizationController.updateLocation)
   .delete(organizationController.removeLocation);
 
 export default router;

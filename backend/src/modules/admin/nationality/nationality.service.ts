@@ -1,6 +1,7 @@
 import { nationalityRepository, NationalityRepository } from './nationality.repository';
 import { INationality } from './nationality.model';
 import { AppError } from '../../../common/errors/AppError';
+import { escapeRegex } from '../../../common/utils/regex';
 
 export class NationalityService {
   constructor(private repo: NationalityRepository = nationalityRepository) {}
@@ -21,7 +22,7 @@ export class NationalityService {
 
     const filter: any = {};
     if (query.search) {
-      filter.name = { $regex: query.search, $options: 'i' };
+      filter.name = { $regex: escapeRegex(query.search), $options: 'i' };
     }
     if (query.status) {
       filter.status = query.status;

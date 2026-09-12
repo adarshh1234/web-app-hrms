@@ -14,6 +14,22 @@ interface HistoryItem {
   read: string;
 }
 
+const DEPARTMENTS = [
+  { id: 'DEPT-HR', name: 'HR' },
+  { id: 'DEPT-IT', name: 'IT' },
+  { id: 'DEPT-FIN', name: 'Finance' },
+  { id: 'DEPT-MKT', name: 'Marketing' },
+  { id: 'DEPT-OPS', name: 'Operations' },
+];
+
+const EMPLOYEES = [
+  { id: 'EMP329561', name: 'Karthika Balan', dept: 'IT' },
+  { id: 'EMP329562', name: 'Sarah Joseph', dept: 'HR' },
+  { id: 'EMP329563', name: 'Sarah Jo', dept: 'Marketing' },
+  { id: 'EMP329564', name: 'Michael', dept: 'Finance' },
+  { id: 'EMP329565', name: 'David', dept: 'Operations' },
+];
+
 export const NotificationsPage: React.FC = () => {
   const toast = useToast();
   const location = useLocation();
@@ -47,7 +63,7 @@ export const NotificationsPage: React.FC = () => {
     activeChannel = 'HUREMASO';
   }
 
-  // Recipient checkboxes state
+  // Recipient checkboxes state (keyed by ID)
   const [selectedDepts, setSelectedDepts] = useState<Record<string, boolean>>({});
   const [selectedEmps, setSelectedEmps] = useState<Record<string, boolean>>({});
   const [searchTerm, setSearchTerm] = useState('');
@@ -117,25 +133,42 @@ export const NotificationsPage: React.FC = () => {
     loadHistory();
   }, [loadHistory]);
 
-  const handleDeptToggle = (dept: string) => {
-    setSelectedDepts((prev) => ({ ...prev, [dept]: !prev[dept] }));
+  const handleDeptToggle = (deptId: string) => {
+    setSelectedDepts((prev) => ({ ...prev, [deptId]: !prev[deptId] }));
   };
 
-  const handleEmpToggle = (emp: string) => {
-    setSelectedEmps((prev) => ({ ...prev, [emp]: !prev[emp] }));
+  const handleEmpToggle = (empId: string) => {
+    setSelectedEmps((prev) => ({ ...prev, [empId]: !prev[empId] }));
   };
 
-  const getSelectedRecipientsLabel = () => {
-    const selectedEmpNames = Object.keys(selectedEmps).filter((emp) => selectedEmps[emp]);
-    const selectedDeptNames = Object.keys(selectedDepts).filter((dept) => selectedDepts[dept]);
+  const getRecipientInfo = () => {
+    const selectedEmpIds = Object.keys(selectedEmps).filter((id) => selectedEmps[id]);
+    const selectedDeptIds = Object.keys(selectedDepts).filter((id) => selectedDepts[id]);
 
-    if (selectedEmpNames.length > 0) {
-      return `${selectedEmpNames.length} Selected Employee(s)`;
+    if (selectedEmpIds.length > 0) {
+      const selectedNames = EMPLOYEES.filter((e) => selectedEmpIds.includes(e.id)).map((e) => e.name);
+      return {
+        recipientType: 'EMPLOYEES' as const,
+        employeeIds: selectedEmpIds,
+        departmentIds: [],
+        recipients: `${selectedEmpIds.length} Selected Employee(s) (${selectedNames.join(', ')})`,
+      };
     }
-    if (selectedDeptNames.length > 0) {
-      return selectedDeptNames.join(', ');
+    if (selectedDeptIds.length > 0) {
+      const selectedNames = DEPARTMENTS.filter((d) => selectedDeptIds.includes(d.id)).map((d) => d.name);
+      return {
+        recipientType: 'DEPARTMENT' as const,
+        employeeIds: [],
+        departmentIds: selectedDeptIds,
+        recipients: selectedNames.join(', '),
+      };
     }
-    return 'All Employees';
+    return {
+      recipientType: 'ALL_EMPLOYEES' as const,
+      employeeIds: [],
+      departmentIds: [],
+      recipients: 'All Employees',
+    };
   };
 
   const handleSend = async () => {
@@ -145,13 +178,22 @@ export const NotificationsPage: React.FC = () => {
     }
     setIsSubmitting(true);
     try {
-      await notificationService.createNotification({
+      const recipientInfo = getRecipientInfo();
+
+      // Step 1: Save as DRAFT
+      const draft = await notificationService.createNotification({
         channel: activeChannel,
         subject: subject || 'No Subject',
         message: message.trim(),
-        recipients: getSelectedRecipientsLabel(),
-        status: 'SENT',
+        recipients: recipientInfo.recipients,
+        recipientType: recipientInfo.recipientType,
+        employeeIds: recipientInfo.employeeIds,
+        departmentIds: recipientInfo.departmentIds,
+        status: 'DRAFT',
       });
+
+      // Step 2: Explicitly dispatch via /send endpoint
+      await notificationService.sendNotification(draft.id);
 
       setSubject('');
       setMessage('');
@@ -173,11 +215,15 @@ export const NotificationsPage: React.FC = () => {
     }
     setIsSubmitting(true);
     try {
+      const recipientInfo = getRecipientInfo();
       await notificationService.createNotification({
         channel: activeChannel,
         subject: subject || 'No Subject',
         message: message.trim() || '(Draft Content)',
-        recipients: getSelectedRecipientsLabel(),
+        recipients: recipientInfo.recipients,
+        recipientType: recipientInfo.recipientType,
+        employeeIds: recipientInfo.employeeIds,
+        departmentIds: recipientInfo.departmentIds,
         status: 'DRAFT',
       });
 
@@ -196,7 +242,6 @@ export const NotificationsPage: React.FC = () => {
 
   // Filter history items locally if needed
   const filteredHistory = historyItems;
-
 
   return (
     <div className="space-y-6">
@@ -228,15 +273,15 @@ export const NotificationsPage: React.FC = () => {
           <div className="space-y-2">
             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Departments</span>
             <div className="space-y-1.5 pl-1">
-              {['All Departments', 'HR', 'IT', 'Finance', 'Marketing', 'Operations'].map((dept) => (
-                <label key={dept} className="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-slate-700 hover:text-slate-900">
+              {DEPARTMENTS.map((dept) => (
+                <label key={dept.id} className="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-slate-700 hover:text-slate-900">
                   <input 
                     type="checkbox"
-                    checked={!!selectedDepts[dept]}
-                    onChange={() => handleDeptToggle(dept)}
+                    checked={!!selectedDepts[dept.id]}
+                    onChange={() => handleDeptToggle(dept.id)}
                     className="rounded border-slate-300 text-[#006666] focus:ring-[#006666] h-3.5 w-3.5"
                   />
-                  <span>{dept}</span>
+                  <span>{dept.name}</span>
                 </label>
               ))}
             </div>
@@ -246,18 +291,12 @@ export const NotificationsPage: React.FC = () => {
           <div className="space-y-2 pt-2 border-t border-slate-100">
             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Employees</span>
             <div className="space-y-1.5 pl-1 max-h-48 overflow-y-auto">
-              {[
-                { name: 'Karthika Balan', dept: 'IT' },
-                { name: 'Sarah Jo', dept: 'Marketing' },
-                { name: 'Michael', dept: 'Finance' },
-                { name: 'David', dept: 'Operations' },
-                { name: 'Sarah Joseph', dept: 'HR' },
-              ].map((emp) => (
-                <label key={emp.name} className="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-slate-700 hover:text-slate-900">
+              {EMPLOYEES.filter((emp) => emp.name.toLowerCase().includes(searchTerm.toLowerCase())).map((emp) => (
+                <label key={emp.id} className="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-slate-700 hover:text-slate-900">
                   <input 
                     type="checkbox"
-                    checked={!!selectedEmps[emp.name]}
-                    onChange={() => handleEmpToggle(emp.name)}
+                    checked={!!selectedEmps[emp.id]}
+                    onChange={() => handleEmpToggle(emp.id)}
                     className="rounded border-slate-300 text-[#006666] focus:ring-[#006666] h-3.5 w-3.5"
                   />
                   <span>{emp.name} <span className="text-slate-400">({emp.dept})</span></span>

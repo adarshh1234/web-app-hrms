@@ -1,6 +1,7 @@
 import { qualificationRepository, QualificationRepository } from './qualification.repository';
 import { IQualification } from './qualification.model';
 import { AppError } from '../../../common/errors/AppError';
+import { escapeRegex } from '../../../common/utils/regex';
 
 export class QualificationService {
   constructor(private repo: QualificationRepository = qualificationRepository) {}
@@ -12,7 +13,7 @@ export class QualificationService {
   async getQualifications(query: any): Promise<IQualification[]> {
     const filter: any = {};
     if (query.category) filter.category = query.category;
-    if (query.search) filter.name = { $regex: query.search, $options: 'i' };
+    if (query.search) filter.name = { $regex: escapeRegex(query.search), $options: 'i' };
     return await this.repo.findAll(filter);
   }
 
